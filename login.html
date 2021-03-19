@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        .root {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="root">
+        <h1>Login: </h1>
+        <p>username: <input type="text" id="username"></p>
+        <p>password: <input type="password" id="password"></p>
+        <button type="button" onclick="loginButtonClicked()">Login</button>
+        <button type="button" onclick="registerButtonClicked()">Go to register page</button>
+        <p><i>try username 'admin' with password 'root'</i></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        axios.defaults.baseURL = 'https://kind-wind-83282.pktriot.net';
+        // axios.defaults.headers.common['Authorization'] = "AUTH_TOKEN";
+
+        const loginButtonClicked = () => {
+            axios.post('/auth/token/get/', {
+                username: document.querySelector('#username').value,
+                password: document.querySelector('#password').value,
+            })
+                .then(response => {
+                    localStorage.setItem('token', response.data.access)
+                    alert('logged in, you will be redirected')
+                    window.location.href = 'index.html'
+                })
+                .catch(error => {
+                    console.log(error)
+                    if (error.response.status == 401) {
+                        alert(error.response.data.detail)
+                    }
+                })
+        }
+
+        const registerButtonClicked = () => {
+            window.location.href = "register.html"
+        }
+    </script>
+</body>
+
+</html>

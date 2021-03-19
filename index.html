@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Placeholder CMS</title>
+    <style>
+        .root {
+            text-align: center;
+        }
+
+        #logout {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="root">
+        <h1>
+            ping result: <span id='ping-result'>...</span>
+        </h1>
+        <button id="logout" type="button" onclick="logout()">log out</button>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        axios.defaults.baseURL = 'https://kind-wind-83282.pktriot.net'
+        token = localStorage.getItem('token') || "MISSING_TOKEN"
+        axios.defaults.headers.common['Authorization'] = "Bearer " + token
+
+        window.onload = () => {
+            axios.get('/auth/rping')
+                .then(result => {
+                    document.querySelector('#ping-result').innerHTML = result.data
+                    document.querySelector('#logout').style.display = 'unset'
+                })
+                .catch(error => {
+                    if (error.response.status == 401) {
+                        alert('not authorized, you will be redirected to log in')
+                        window.location.href = 'login.html'
+                    } else {
+                        console.log(error)
+                    }
+                })
+        }
+
+        const logout = () => {
+            // TODO: send token revoke request to API
+            localStorage.setItem('token', '')
+            location.reload()
+        }
+    </script>
+</body>
+
+</html>

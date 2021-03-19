@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        .root {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="root">
+        <h1>Register: </h1>
+        <p>username: <input type="text" id="username"></p>
+        <p>first_name: <input type="text" id="first_name"></p>
+        <p>last_name: <input type="text" id="last_name"></p>
+        <p>email: <input type="text" id="email"></p>
+        <p>password: <input type="password" id="password"></p>
+        <button type="button" onclick="registerButtonClicked()">Register</button>
+        <p><i>NOTE: the API enforces some constraints on these fields</i></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        axios.defaults.baseURL = 'https://kind-wind-83282.pktriot.net';
+        // axios.defaults.headers.common['Authorization'] = "AUTH_TOKEN";
+
+        const registerButtonClicked = () => {
+            axios.post('/auth/register/', {
+                username: document.querySelector('#username').value,
+                first_name: document.querySelector('#first_name').value,
+                last_name: document.querySelector('#last_name').value,
+                email: document.querySelector('#email').value,
+                password: document.querySelector('#password').value,
+            })
+                .then(response => {
+                    console.log(response)
+                    // localStorage.setItem('token', response.data.access)
+                    alert('account created, you will be redirected to login')
+                    window.location = 'login.html'
+                })
+                .catch(error => {
+                    console.log(error)
+                    if (error.response.status == 400) {
+                        alert(error.response.request.response)
+                    }
+                })
+        }
+    </script>
+</body>
+
+</html>
