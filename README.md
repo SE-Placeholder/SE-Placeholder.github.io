@@ -5,6 +5,12 @@
 
 ## Changelog
 
+### **v0.2**: Expanded authentication system, dummy api endpoint and a simple vue component based frontend
+- dynamic elements handled by vue components
+- bootstrap dark theme
+- axios request interceptor for abstracting away jwt token authentication
+- password change and password reset
+
 ### **v0.1**: JWT authentication system proof of concept
 - home page automatically sending a get request to a restricted endpoint of the API (simulating the loading of the conference list or whatever)
 - redirect to login page when user is not authenticated

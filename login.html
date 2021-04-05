@@ -1,55 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
-    <style>
-        .root {
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-    <div class="root">
-        <h1>Login: </h1>
-        <p>username: <input type="text" id="username"></p>
-        <p>password: <input type="password" id="password"></p>
-        <button type="button" onclick="loginButtonClicked()">Login</button>
-        <button type="button" onclick="registerButtonClicked()">Go to register page</button>
-        <p><i>try username 'admin' with password 'root'</i></p>
+    <div class="vertical-center-full">
+        <div class="container">
+            <div id="login">
+                <div id="login-row" class="row justify-content-center align-items-center">
+                    <div id="login-column" class="col-md-6">
+                        <div id="login-box" class="col-md-12">
+                            <form id="login-form" class="form" @submit.prevent="login">
+                                <h3 class="text-center text-info">Login</h3>
+                                <div class="form-group">
+                                    <label for="username" class="text-info">Username:</label><br>
+                                    <input type="text" class="form-control" v-model="data.username">
+                                </div>
+                                <div class="form-group">
+                                    <label for="password" class="text-info">Password:</label><br>
+                                    <input type="password" class="form-control" v-model="data.password">
+                                </div>
+                                <div class="form-group">
+                                    <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
+                                </div>
+                                <div id="register-link" class="text-right">
+                                    <a href="#" class="text-info">Register here</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="api.js"></script>
     <script>
-        axios.defaults.baseURL = 'https://kind-wind-83282.pktriot.net';
-        // axios.defaults.headers.common['Authorization'] = "AUTH_TOKEN";
-
-        const loginButtonClicked = () => {
-            axios.post('/auth/token/get/', {
-                username: document.querySelector('#username').value,
-                password: document.querySelector('#password').value,
-            })
-                .then(response => {
-                    localStorage.setItem('token', response.data.access)
-                    alert('logged in, you will be redirected')
-                    window.location.href = 'index.html'
-                })
-                .catch(error => {
-                    console.log(error)
-                    if (error.response.status == 401) {
-                        alert(error.response.data.detail)
+        Vue.createApp({
+            data() {
+                return {
+                    data: {
+                        username: '',
+                        password: '' 
                     }
-                })
-        }
-
-        const registerButtonClicked = () => {
-            window.location.href = "register.html"
-        }
+                }
+            },
+            methods: {
+                login() {
+                    // TODO: don't hardcode endpoints
+                    api
+                    .post('auth/login/', {
+                        username: this.data.username,
+                        password: this.data.password
+                    }).then(response => {
+                        // TODO: handle this in axios interceptor
+                        window.localStorage.setItem('x-jwt-access-tokens', response.data.access_token)
+                        // TODO: redirect to page from which we came from
+                        window.location.href = 'conferences.html'
+                    }).catch(error => {
+                        alert(JSON.stringify(error.response.data))
+                    })
+                }
+            }
+        })
+        .mount('#login')
     </script>
 </body>
-
 </html>

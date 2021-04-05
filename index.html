@@ -1,57 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Placeholder CMS</title>
-    <style>
-        .root {
-            text-align: center;
-        }
-
-        #logout {
-            display: none;
-        }
-    </style>
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-    <div class="root">
-        <h1>
-            ping result: <span id='ping-result'>...</span>
-        </h1>
-        <button id="logout" type="button" onclick="logout()">log out</button>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-        axios.defaults.baseURL = 'https://kind-wind-83282.pktriot.net'
-        token = localStorage.getItem('token') || "MISSING_TOKEN"
-        axios.defaults.headers.common['Authorization'] = "Bearer " + token
-
-        window.onload = () => {
-            axios.get('/auth/rping')
-                .then(result => {
-                    document.querySelector('#ping-result').innerHTML = result.data
-                    document.querySelector('#logout').style.display = 'unset'
-                })
-                .catch(error => {
-                    if (error.response.status == 401) {
-                        alert('not authorized, you will be redirected to log in')
-                        window.location.href = 'login.html'
-                    } else {
-                        console.log(error)
-                    }
-                })
-        }
-
-        const logout = () => {
-            // TODO: send token revoke request to API
-            localStorage.setItem('token', '')
-            location.reload()
-        }
-    </script>
+    <h1>TODO:</h1>
+    <ul>
+        <li>show <a href="conferences.html">go to conferences</a> button if the user is logged in</li>
+        <li>show <a href="login.html">login</a>/<a href="register.html">register</a> buttons if the user is not logged in</li>
+    </ul>
+    <h2>Currently exposed endpoints:</h2>
+    <ul>
+        <h4>dummy</h4>
+        <li><a href="https://kind-wind-83282.pktriot.net/conferences/">conferences/</a>: get list of conferences</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/restricted/conferences/">restricted/conferences/</a>: get list of conferences (requires authentication)</li>
+        <h4>auth</h4>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/login/">auth/login/</a>: get jwt token pair</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/logout/">auth/logout/</a>: blacklist refresh token</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/password/change/">auth/password/change/</a>: change password</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/password/reset/">auth/password/reset/</a>: send password reset email</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/password/reset/confirm/">auth/password/reset/confirm/</a>: reset password</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/register/">auth/register/</a>: create new user account</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/token/verify/">auth/token/verify/</a>: verify validity of jwt token</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/token/refresh/">auth/token/refresh/</a>: refresh jwt token</li>
+        <li><a href="https://kind-wind-83282.pktriot.net/auth/user/">auth/user/</a>: user information</li>    
+    </ul>
 </body>
-
 </html>

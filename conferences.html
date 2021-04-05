@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conferences list</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <div id="conferences">
+            <div class="row py-5" v-for="conference in conferences">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">{{conference.name}}</div>
+                        <div class="card-body">{{conference.description}}</div>
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Registration deadline: {{conference.deadline}}
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="float-right p-1">
+                                        <button type="button" class="btn btn-primary">
+                                            Register
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="logout-button">
+            <div class="row pb-5">
+                <div class="col text-center">
+                    <button v-on:click="logout()" type="button" class="btn btn-secondary">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="api.js"></script>
+    <script>
+        Vue.createApp({
+            data() {
+                return {
+                    conferences: []
+                }
+            },
+            mounted() {
+                // TODO: don't hardcode endpoints
+                api
+                .get('restricted/conferences/')
+                .then(response => this.conferences = response.data)
+                .catch(error => console.log(error))
+            }
+        })
+        .mount('#conferences')
+
+        Vue.createApp({
+            methods: {
+                logout() {
+                    // TODO: call api to blacklist token and handle everything in axios interceptor
+                    window.localStorage.removeItem('x-jwt-access-tokens')
+                    window.location.href = 'login.html'
+                }
+            }
+        })
+        .mount('#logout-button')
+    </script>
+</body>
+</html>
