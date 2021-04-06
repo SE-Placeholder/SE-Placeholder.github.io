@@ -55,9 +55,8 @@
                 }
             },
             mounted() {
-                // TODO: don't hardcode endpoints
                 api
-                .get('restricted/conferences/')
+                .getConferences()
                 .then(response => this.conferences = response.data)
                 .catch(error => console.log(error))
             }
@@ -67,9 +66,12 @@
         Vue.createApp({
             methods: {
                 logout() {
-                    // TODO: call api to blacklist token and handle everything in axios interceptor
-                    window.localStorage.removeItem('x-jwt-access-tokens')
-                    window.location.href = 'login.html'
+                    api
+                    .logout()
+                    .then(response => {
+                        window.location.href = 'login.html'
+                    })
+                    .catch(error => console.log(error))
                 }
             }
         })
