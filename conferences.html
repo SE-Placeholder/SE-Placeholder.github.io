@@ -1,20 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Conferences list</title>
+    <link rel="shortcut icon" type="image/png" href="resources/placeholder.png" />
     <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="index.html">
+            <img src="resources/placeholder.png" width="30" height="30" class="d-inline-block align-top mr-2" alt="">
+            Just a placeholder
+        </a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="conferences.html">Conferences</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <div id="logout-button">
+                        <a v-on:click.prevent="logout()" class="nav-link" href="#">Log out</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
     <div class="container">
         <div id="conferences">
             <div class="row py-5" v-for="conference in conferences">
                 <div class="col-md-12">
-                    <div class="card">
+                    <!-- TODO: different border colors depending on current conference phase -->
+                    <!-- TODO: border-success for registration and submission phase and so on -->
+                    <div class="card mb-3">
                         <div class="card-header">{{conference.name}}</div>
-                        <div class="card-body">{{conference.description}}</div>
+                        <div class="card-body">
+                            <h5 class="card-title">Description</h5>
+                            <p class="card-text">{{conference.description}}</p>
+                        </div>
                         <div class="card-footer">
                             <div class="row">
                                 <div class="col-md-6">
@@ -33,17 +63,8 @@
                 </div>
             </div>
         </div>
-        <div id="logout-button">
-            <div class="row pb-5">
-                <div class="col text-center">
-                    <button v-on:click="logout()" type="button" class="btn btn-secondary">
-                        Logout
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
-   
+
     <script src="https://unpkg.com/vue@next"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script src="api.js"></script>
@@ -69,7 +90,7 @@
                     api
                     .logout()
                     .then(response => {
-                        window.location.href = 'login.html'
+                        window.location.href = 'index.html'
                     })
                     .catch(error => console.log(error))
                 }
@@ -78,4 +99,5 @@
         .mount('#logout-button')
     </script>
 </body>
+
 </html>

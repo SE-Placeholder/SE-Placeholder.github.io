@@ -8,26 +8,44 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h1>TODO:</h1>
-    <ul>
-        <li>show <a href="conferences.html">go to conferences</a> button if the user is logged in</li>
-        <li>show <a href="login.html">login</a>/<a href="register.html">register</a> buttons if the user is not logged in</li>
-    </ul>
-    <h2>Currently exposed endpoints:</h2>
-    <ul>
-        <h4>dummy</h4>
-        <li><a href="https://kind-wind-83282.pktriot.net/conferences/">conferences/</a>: get list of conferences</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/restricted/conferences/">restricted/conferences/</a>: get list of conferences (requires authentication)</li>
-        <h4>auth</h4>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/login/">auth/login/</a>: get jwt token pair</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/logout/">auth/logout/</a>: blacklist refresh token</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/password/change/">auth/password/change/</a>: change password</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/password/reset/">auth/password/reset/</a>: send password reset email</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/password/reset/confirm/">auth/password/reset/confirm/</a>: reset password</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/register/">auth/register/</a>: create new user account</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/token/verify/">auth/token/verify/</a>: verify validity of jwt token</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/token/refresh/">auth/token/refresh/</a>: refresh jwt token</li>
-        <li><a href="https://kind-wind-83282.pktriot.net/auth/user/">auth/user/</a>: user information</li>    
-    </ul>
+    <div class="container">
+        <div class="pt-4"> 
+            <h1>TODO:</h1>
+            <ul>
+                <li>show <a href="conferences.html">go to conferences</a> button if the user is logged in</li>
+                <li>show <a href="login.html">login</a>/<a href="register.html">register</a> buttons if the user is not logged in</li>
+            </ul>
+            <h2>Currently exposed endpoints:</h2>
+            <ul>
+                <h4>admin</h4>
+                <li><a href="https://kind-wind-83282.pktriot.net/admin/">admin/</a> &mdash; django admin panel</li>
+                <h4>auth</h4>
+                <li><a href="https://kind-wind-83282.pktriot.net/auth/login/">auth/login/</a> &mdash; retrieve auth token</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/auth/logout/">auth/logout/</a> &mdash; blacklist token</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/auth/register/">auth/register/</a> &mdash; create new user account</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/auth/user/">auth/user/</a> &mdash; user information</li>  
+                <li><a href="https://kind-wind-83282.pktriot.net/auth/password/change/">auth/password/change/</a> &mdash; change password</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/auth/password/reset/">auth/password/reset/</a> &mdash; request password reset email</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/auth/password/reset/confirm/">auth/password/reset/confirm/</a> &mdash; reset password</li>
+                <h4>dummy</h4>
+                <li><a href="https://kind-wind-83282.pktriot.net/dummy/conferences/">dummy/conferences/</a> &mdash; get list of conferences</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/dummy/non-restricted/conferences/">dummy/non-restricted/conferences/</a> &mdash; get list of conferences (does not require authentication)</li>
+                <h4>user</h4>
+                <li><a href="https://kind-wind-83282.pktriot.net/user/list/">user/list/</a> &mdash; get list of users</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/user/get/username/">user/get/&lt;username&gt;</a> &mdash; get information about a user given the username</li>
+                <h4>conference</h4>
+                <li><a href="https://kind-wind-83282.pktriot.net/conference/list/">conference/list/</a> &mdash; get list of conferences</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/conference/get/id/">conference/get/&lt;id&gt;</a> &mdash; get information about a conference given the id</li>
+                <li><a href="https://kind-wind-83282.pktriot.net/conference/add/">conference/add/</a> &mdash; add new conference</li>
+                <h4>paper</h4>
+                <li><a href="https://kind-wind-83282.pktriot.net/paper/list/">paper/list/</a> &mdash; get list of papers</li>
+            </ul>
+            <hr/>
+            <blockquote class="blockquote text-center">
+                <p class="mb-0">It might be usable if it weren't hosted on a potato</p>
+                <footer class="blockquote-footer"><cite>roliboy, while watching requests time out</cite></footer>
+            </blockquote>
+        </div>
+    </div>
 </body>
 </html>

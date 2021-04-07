@@ -5,6 +5,12 @@
 
 ## Changelog
 
+### **v0.3**: Documentation for new endpoints, password reset and navbar
+- sick placeholder logo
+- password reset by email (kinda)
+- moved logout button inside the navbar
+- login page now redirects back to previous page
+
 ### **v0.2**: Expanded authentication system, dummy api endpoint and a simple vue component based frontend
 - dynamic elements handled by vue components
 - bootstrap dark theme

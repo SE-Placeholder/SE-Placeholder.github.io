@@ -28,7 +28,9 @@
                                     <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
                                 </div>
                                 <div id="register-link" class="text-right">
-                                    <a href="register.html" class="text-info">Register here</a>
+                                    <a href="register.html" class="text-info">Register</a>
+                                    /
+                                    <a href="reset_password.html" class="text-info">Reset password</a>
                                 </div>
                             </form>
                         </div>
@@ -56,8 +58,7 @@
                     api
                     .login(this.data.username, this.data.password)
                     .then(response => {
-                        // TODO: redirect to page from which we came from
-                        window.location.href = 'conferences.html'
+                        window.history.back()
                     }).catch(error => {
                         alert(JSON.stringify(error.response.data))
                     })

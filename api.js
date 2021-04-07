@@ -8,13 +8,28 @@ endpoints = {
     login: 'auth/login/',
     logout: 'auth/logout/',
     register: 'auth/register/',
-    getConferences: 'restricted/conferences/',
+    resetPassword: 'auth/password/reset/',
+    getConferences: 'dummy/conferences/',
+
+    // TODO: isAuthenticated() endpoint
+    // '/auth/user/'
+    // '/auth/password/change/'
+    // '/auth/password/reset/confirm/'
+    // '/dummy/conferences/'
+    // '/dummy/non-restricted/conferences/'
+    // '/user/list/'
+    // '/user/get/username/'
+    // '/conference/list/'
+    // '/conference/get/id/'
+    // '/conference/add/'
+    // '/paper/list/'
 }
 
 api = {
     login: (username, password) => client.post(endpoints.login, {username, password}),
     logout: () => client.post(endpoints.logout),
     register: (username, email, password1, password2) => client.post(endpoints.register, {username, email, password1, password2}),
+    resetPassword: email => client.post(endpoints.resetPassword, {email}),
     getConferences: () => client.get(endpoints.getConferences),
 }
 
@@ -47,9 +62,9 @@ client.interceptors.response.use(
         console.log(error.response)
         console.log(error.request)
         console.log(error.config)
-        // TODO: redirect to login when accessing unauthorized endpoint?
-        // if (error.response.status == 401)
-            // window.location.href = 'login.html'
+
+        if (error.response.status == 401)
+            window.location.href = 'login.html'
         return Promise.reject(error)
     }
 )

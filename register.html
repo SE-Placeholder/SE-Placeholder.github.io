@@ -61,7 +61,7 @@
             methods: {
                 register() {
                     api
-                    .register(this.data.username, this.data.password, this.data.password1, this.data.password2)
+                    .register(this.data.username, this.data.email, this.data.password1, this.data.password2)
                     .then(response => {
                         window.location.href = 'conferences.html'
                     }).catch(error => {
