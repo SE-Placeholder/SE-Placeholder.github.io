@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<!-- TODO: clean up this file -->
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -8,6 +8,13 @@
     <title>Conferences list</title>
     <link rel="shortcut icon" type="image/png" href="resources/placeholder.png" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" />
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="api.js"></script>
 </head>
 
 <body>
@@ -18,8 +25,17 @@
         </a>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="conferences.html">Conferences</a>
+                <li class="nav-item">
+                    <button type="button" class="btn">
+                        <a class="nav-link active" href="conferences.html">Conferences</a>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#create-conference-modal">
+                        <div class="nav-link">
+                            <i class="fas fa-plus mr-2"></i>Create conference
+                        </div>
+                    </button>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
@@ -40,7 +56,7 @@
                     <!-- TODO: different border colors depending on current conference phase -->
                     <!-- TODO: border-success for registration and submission phase and so on -->
                     <div class="card mb-3">
-                        <div class="card-header">{{conference.name}}</div>
+                        <div class="card-header">{{conference.title}}</div>
                         <div class="card-body">
                             <h5 class="card-title">Description</h5>
                             <p class="card-text">{{conference.description}}</p>
@@ -48,7 +64,7 @@
                         <div class="card-footer">
                             <div class="row">
                                 <div class="col-md-6">
-                                    Registration deadline: {{conference.deadline}}
+                                    Registration deadline: {{new Date(conference.deadline).toDateString()}}
                                 </div>
                                 <div class="col-md-6">
                                     <div class="float-right p-1">
@@ -64,10 +80,42 @@
             </div>
         </div>
     </div>
+  
+    <div class="modal fade" id="create-conference-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div id="create-conference">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create conference</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form">
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Title:</label>
+                                <input type="text" class="form-control" id="recipient-name" v-model="data.title">
+                            </div>
+                            <div class="form-group">
+                                <label for="message-text" class="col-form-label">Description:</label>
+                                <textarea class="form-control" id="message-text" v-model="data.description"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="birthdaytime" class="col-form-label">Deadline:</label>
+                                <input type="datetime-local" id="birthdaytime" class="form-control" v-model="data.deadline">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" v-on:click="createConference">Create</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script src="https://unpkg.com/vue@next"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
-    <script src="api.js"></script>
     <script>
         Vue.createApp({
             data() {
@@ -97,6 +145,32 @@
             }
         })
         .mount('#logout-button')
+
+        Vue.createApp({
+            data() {
+                return {
+                    data: {
+                        title: '',
+                        description: '',
+                        deadline: new Date().toISOString().replace(/\..*$/, '')
+                    }
+                }
+            },
+            methods: {
+                createConference() {
+                    api
+                    .createConference(this.data.title, this.data.description, this.data.deadline)
+                    .then(response => {
+                        // TODO: actualize list without reloading
+                        // $('#create-conference-modal').modal('hide')
+                        window.location.reload()
+                        console.log(response)
+                    })
+                    .catch(error => console.log(error))
+                }
+            }
+        })
+        .mount('#create-conference')
     </script>
 </body>
 

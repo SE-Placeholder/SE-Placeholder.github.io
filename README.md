@@ -5,6 +5,12 @@
 
 ## Changelog
 
+
+### **v0.3.1**: Modal for creating conferences and get conference list from live endpoint
+- add conference button inside the navbar which opens a modal form for creating a conference, on submit refreshes the page (for now, should be changed in the future)
+- conference list is now retrieved from the live endpoint instead of the dummy one which returned a constant value
+- added neccessary libraries for bootstrap modals
+
 ### **v0.3**: Documentation for new endpoints, password reset and navbar
 - sick placeholder logo
 - password reset by email (kinda)

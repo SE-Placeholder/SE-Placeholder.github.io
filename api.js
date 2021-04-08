@@ -9,7 +9,8 @@ endpoints = {
     logout: 'auth/logout/',
     register: 'auth/register/',
     resetPassword: 'auth/password/reset/',
-    getConferences: 'dummy/conferences/',
+    getConferences: 'conference/list/',
+    createConference: 'conference/add/'
 
     // TODO: isAuthenticated() endpoint
     // '/auth/user/'
@@ -19,9 +20,7 @@ endpoints = {
     // '/dummy/non-restricted/conferences/'
     // '/user/list/'
     // '/user/get/username/'
-    // '/conference/list/'
     // '/conference/get/id/'
-    // '/conference/add/'
     // '/paper/list/'
 }
 
@@ -31,6 +30,7 @@ api = {
     register: (username, email, password1, password2) => client.post(endpoints.register, {username, email, password1, password2}),
     resetPassword: email => client.post(endpoints.resetPassword, {email}),
     getConferences: () => client.get(endpoints.getConferences),
+    createConference: (title, description, deadline) => client.post(endpoints.createConference, {title, description, deadline}),
 }
 
 client.interceptors.request.use(
