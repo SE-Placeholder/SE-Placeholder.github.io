@@ -59,7 +59,7 @@
             },
             methods: {
                 register() {
-                    api.auth.register(this.data.username, this.data.email, this.data.password1, this.data.password2)
+                    api.auth.register(this.username, this.email, this.password1, this.password2)
                     .then(response => {
                         window.location.href = 'conferences.html'
                     })
