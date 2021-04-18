@@ -9,12 +9,11 @@ const endpoints = {
     isAuthenticated: 'auth/is-authenticated',
     changePassword: 'auth/password/change',
     resetPassword: 'auth/password/reset',
-
     conferences: 'conferences',
     conferenceDetails: 'conferences/<id>',
-
-    users: 'users',
-    userDetails: 'users/<username>'
+    joinConference: 'conferences/<id>/join',
+    userConferences: '/user/conferences',
+    papers: 'papers'
 }
 
 const pathEncode = (endpoint, ...arguments) =>
@@ -42,15 +41,37 @@ const api = {
             client.get(endpoints.conferences),
         retrieve: id =>
             client.get(pathEncode(endpoints.conferenceDetails, id)),
-        create: (title, description, deadline) =>
-            client.post(endpoints.conferences, {title, description, deadline}),
+        create: ({title, description, date, location, deadline, fee}) =>
+            client.post(endpoints.conferences, {title, description, date, location, deadline, fee}),
+        join: id =>
+            client.post(pathEncode(endpoints.joinConference, id))
     },
-    users: {
+    user: {
+        conferences: () =>
+            client.get(endpoints.userConferences)
+    },
+    papers: {
         list: () =>
-            client.get(endpoints.users),
-        retrieve: username =>
-            client.get(pathEncode(endpoints.userDetails, username))
-    }
+            client.get(endpoints.papers),
+        create: ({title, conference, topics, keywords, abstract, paper, authors}) => {
+            data = new FormData()
+            data.append('title', title)
+            data.append('conference', conference)
+            data.append('author', authors)
+            data.append('abstract', abstract)
+            // TODO: rename
+            data.append('proposal', paper)
+            data.append('keywords', JSON.stringify(keywords))
+            data.append('topics', JSON.stringify(topics))
+            return client.post(endpoints.papers, data)
+        }
+    },
+    
+    setUnauthorizedCallback: callback =>
+        api.unauthorizedCallback = callback,
+
+    unauthorizedCallback: () =>
+        console.log('unauthorized')
 }
 
 client.interceptors.request.use(
@@ -89,7 +110,7 @@ client.interceptors.response.use(
         console.log(error.config)
 
         if (error.response.status == 401)
-            window.location.href = 'login.html'
+            api.unauthorizedCallback()
 
         return Promise.reject(error)
     }

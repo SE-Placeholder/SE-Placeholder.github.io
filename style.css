@@ -1,24 +1,116 @@
-@import url("https://bootswatch.com/4/darkly/bootstrap.min.css");
-/* @import url("https://bootswatch.com/4/superhero/bootstrap.min.css"); */
-
-.vertical-center-full {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
+:root {
+    --bg-color-darker: #141414;
+    --bg-color: #191919;
+    --bg-color-lighter: #292929;
+    --text-color: #E6E8E6;
+    --contrast-color: #F18F01;
 }
 
-::-webkit-scrollbar {
-    width: 8px;
+body, html {
+    height: 100%;
+    font-family: "Inconsolata", sans-serif;
+    margin: 0;
+    background-color: var(--text-color);
 }
 
-::-webkit-scrollbar-track {
-    background: #222;
+#home-tab {
+    height: 100%;
+    display: block;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #303030;
+#profile-tab {
+    height: 100%;
+    display: none;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #444;
+#dashboard-tab {
+    height: 100%;
+    display: none;
+}
+
+#profile-tab > .presentation, #dashboard-tab > .presentation {
+    min-height: 0%;
+    background-color: var(--bg-color);
+
+    /*background-image: url("resources/cms-bg.jpg");*/
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    border-bottom-left-radius: 8%;
+    border-bottom-right-radius: 24%;
+}
+.presentation {
+    min-height: 75%;
+    background-color: var(--bg-color);
+
+    /*background-image: url("resources/cms-bg.jpg");*/
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    border-bottom-left-radius: 8%;
+    border-bottom-right-radius: 8%;
+}
+
+.presentation h1 {
+    color: var(--text-color);
+    /*background: linear-gradient(var(--text-color), #FF2E00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;*/
+}
+
+#menu {
+    background-image: linear-gradient(var(--bg-color-darker), var(--bg-color));
+    color: var(--text-color);
+    text-decoration: none;
+
+}
+
+#loginModal {
+    min-height: 50%;
+}
+
+.heading {
+    color: var(--bg-color-lighter);
+}
+
+.conference-name {
+    color: var(--text-color);
+    background-color: var(--bg-color-lighter);
+}
+
+#addConferenceButton {
+    border: 1px solid var(--text-color);
+}
+
+.conference-details-primary {
+
+}
+
+.conference-details-secondary {
+    font-size: 14px;
+    font-weight: lighter;
+}
+
+button .conference-details-secondary {
+    color: var(--text-color);
+}
+
+.cms-button {
+    background-color: var(--bg-color);
+    color: var(--contrast-color);
+    font-weight: bold;
+}
+
+form textarea {
+    min-height: 100px;
+}
+
+.tag {
+    /*color: var(--contrast-color);*/
+    margin-right: 2px;
+    margin-top: 2px;
+}
+
+.tag:hover {
+    background-color: var(--contrast-color);
+    color: var(--bg-color-darker);
+    font-weight: bold;
 }

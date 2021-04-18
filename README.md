@@ -5,6 +5,8 @@
 
 ## Changelog
 
+### **v1.0**: New frontend
+- things 
 
 ### **v0.4**: New js middleware, profile page and refactored html sources
 - response interceptor now resolves responses from `logout` and `is-authenticated`, even if the return code is 401 unauthorized
