@@ -3,16 +3,17 @@ const client = axios.create({
 })
 
 const endpoints = {
+    info: 'auth/info',
     login: 'auth/login',
     logout: 'auth/logout',
     register: 'auth/register',
-    isAuthenticated: 'auth/is-authenticated',
     changePassword: 'auth/password/change',
     resetPassword: 'auth/password/reset',
     conferences: 'conferences',
     conferenceDetails: 'conferences/<id>',
     joinConference: 'conferences/<id>/join',
     userConferences: '/user/conferences',
+    userPapers: '/user/papers',
     papers: 'papers'
 }
 
@@ -23,14 +24,14 @@ const pathEncode = (endpoint, ...arguments) =>
 
 const api = {
     auth: {
+        info: () =>
+            client.get(endpoints.info),
         login: (username, password) =>
             client.post(endpoints.login, {username, password}),
         logout: () =>
             client.post(endpoints.logout),
         register: (username, email, password1, password2) =>
             client.post(endpoints.register, {username, email, password1, password2}),
-        isAuthenticated: () =>
-            client.get(endpoints.isAuthenticated),    
         changePassword: () =>
             console.error("NOT IMPLEMENTED"),
         resetPassword: email =>
@@ -43,12 +44,16 @@ const api = {
             client.get(pathEncode(endpoints.conferenceDetails, id)),
         create: ({title, description, date, location, deadline, fee}) =>
             client.post(endpoints.conferences, {title, description, date, location, deadline, fee}),
+        update: ({id, title, description, date, location, deadline, fee}) =>
+            client.post(pathEncode(endpoints.conferenceDetails, id), {title, description, date, location, deadline, fee}),
         join: id =>
             client.post(pathEncode(endpoints.joinConference, id))
     },
     user: {
         conferences: () =>
-            client.get(endpoints.userConferences)
+            client.get(endpoints.userConferences),
+        papers: () =>
+            client.get(endpoints.userPapers)
     },
     papers: {
         list: () =>
@@ -57,7 +62,9 @@ const api = {
             data = new FormData()
             data.append('title', title)
             data.append('conference', conference)
-            data.append('author', authors)
+            console.warn('authors', authors)
+
+            if (authors.length) data.append('contributors', authors)
             data.append('abstract', abstract)
             // TODO: rename
             data.append('proposal', paper)
@@ -66,12 +73,8 @@ const api = {
             return client.post(endpoints.papers, data)
         }
     },
-    
     setUnauthorizedCallback: callback =>
-        api.unauthorizedCallback = callback,
-
-    unauthorizedCallback: () =>
-        console.log('unauthorized')
+        api.unauthorizedCallback = callback
 }
 
 client.interceptors.request.use(
@@ -96,10 +99,12 @@ client.interceptors.response.use(
     },
 
     error => {
-        if (error.response.config.url == endpoints.isAuthenticated && error.response.status == 401) {
-            return Promise.resolve({...error.response, data:{...error.response.data, authenticated:false}})
+        if (error.response.config.url == endpoints.info && error.response.status == 401) {
+            window.localStorage.removeItem('x-jwt-access-token')
+            return Promise.resolve({...error.response, data: {...error.response.data, authenticated: false}})
         }
         if (error.response.config.url == endpoints.logout && error.response.status == 401) {
+            window.localStorage.removeItem('x-jwt-access-token')
             return Promise.resolve(error.response)
         }
 

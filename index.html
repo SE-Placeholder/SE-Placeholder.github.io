@@ -6,20 +6,30 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://unpkg.com/vue@next"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script src="api.js"></script>
+    <script src="script.js" defer></script>
     <title>Conference Management System</title>
 </head>
 <body>
 
+<!-- Preloader -->
+<div id="loader-wrapper">
+    <div id="loader"></div>
+    <div class="loader-section section-left"></div>
+    <div class="loader-section section-right"></div>
+</div>
+
 <!-- Navigation Menu -->
-<div id="menu" class="w3-bar w3-large">
-    <a class="w3-bar-item w3-button w3-ripple" onclick="openTab('home-tab')">HOME</a>
-    <a v-if="authenticated" class="w3-bar-item w3-button w3-ripple" onclick="openTab('profile-tab')">Profile</a>
-    <a v-if="authenticated" class="w3-bar-item w3-button w3-ripple" onclick="openTab('dashboard-tab')">Dashboard</a>
-    <a v-if="authenticated" class="w3-bar-item w3-button w3-ripple" @click.prevent="showAddConference">Add Conference +</a>
+<div id="menu" class="w3-bar w3-xlarge">
+    <a class="w3-bar-item w3-button w3-ripple w3-left" onclick="openTab('.menu-tab', 'home-tab')">HOME</a>
+<!--    <a v-if="authenticated" class="w3-bar-item w3-button w3-ripple" onclick="openTab('profile-tab')">Profile</a>-->
+    <a v-if="authenticated" class="w3-bar-item w3-button w3-ripple w3-left" onclick="openTab('.menu-tab', 'dashboard-tab')">Dashboard</a>
+    <a v-if="authenticated" class="w3-bar-item w3-button w3-ripple w3-round-large w3-left" @click.prevent="showAddConference" style="border: 1px solid var(--text-color)">Add Conference <span class="icon material-icons md-24">add_circle_outline</span></a>
     <a v-if="authenticated" class="w3-bar-item w3-button w3-ripple w3-right" @click.prevent="logout">Sign Out</a>
+    <a v-if="authenticated" class="w3-bar-item w3-right w3-text-grey">&#8226;{{username}}&#8226;</a>
     <a v-if="!authenticated" class="w3-bar-item w3-button w3-ripple w3-right" @click.prevent="showLogin">Sign In</a>
 </div>
 
@@ -50,7 +60,10 @@
                             <section class="conference-details-secondary w3-small">Location: <span>{{conference.location}}</span></section>
                             <section class="conference-details-secondary w3-small">Date: <span>{{conference.date}}</span></section>
                             <section class="conference-details-secondary w3-small">Fee: <span>${{conference.fee}}</span></section>
-                            <section class="conference-details-secondary w3-small w3-display-bottomleft w3-margin">Want to propose a paper? <a href="#" v-on:click="showSubmissionModal(conference.id)"> Click here!</a></section>
+                            <section class="conference-details-secondary w3-small w3-display-bottomleft w3-margin">
+                                Want to propose a paper?
+                                <a href="#" v-on:click="showSubmissionModal(conference.id)">Click here!</a>
+                            </section>
                         </div>
                         <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding-64 w3-margin" v-on:click="showConfirmJoinModal(conference.id, conference.title)">
                             Get a ticket
@@ -78,14 +91,23 @@
         <h1 class="w3-jumbo">Dashboard</h1>
     </header>
 
+
+    <!-- Dashboard Menu -->
+    <div id="dashboard-menu" class="w3-sidebar w3-bar-block w3-large w3-cell">
+        <button class="w3-bar-item w3-button w3-ripple w3-center w3-padding-32" onclick="openTab('.dashboard-content-tab', 'dashboard-conferences-tab')">My Conferences <span style="float: right">&#10095;</span></button>
+        <button class="w3-bar-item w3-button w3-ripple w3-center w3-padding-32" onclick="openTab('.dashboard-content-tab', 'dashboard-papers-tab')">My Papers <span style="float: right">&#10095;</span> </button>
+    </div>
+
     <!-- My Conferences Section -->
-    <div class="w3-container">
+    <div id="dashboard-conferences-tab" class="dashboard-content-tab w3-container w3-cell">
         <h2 class="w3-container w3-xxlarge">My Conferences</h2>
 
+        <!-- Listener -->
         <h3 class="w3-container w3-xlarge">Listener</h3>
+        <div v-if="conferences.listener && conferences.listener.length === 0" class="w3-container w3-small w3-margin-left">You are not attending any conference</div>
         <div v-for="conference in conferences.listener">
             <!-- My Conference Details Card -->
-            <div class="w3-panel">
+            <div class="w3-panel w3-margin-left">
                 <div class="w3-card w3-round-large w3-leftbar w3-display-container w3-hover-shadow">
                     <h3 class="conference-name w3-padding w3-wide">{{conference.title}}</h3>
                     <div class="w3-bar">
@@ -99,10 +121,12 @@
             </div>
         </div>
 
+        <!-- Steering -->
         <h3 class="w3-container w3-xlarge">Steering</h3>
+        <div v-if="conferences.steeringCommittee && conferences.steeringCommittee.length === 0" class="w3-container w3-small w3-margin-left">You are not steering any conference</div>
         <div v-for="conference in conferences.steeringCommittee">
             <!-- My Conference Details Card -->
-            <div class="w3-panel">
+            <div class="w3-panel w3-margin-left">
                 <div class="w3-card w3-round-large w3-leftbar w3-display-container w3-hover-shadow">
                     <h3 class="conference-name w3-padding w3-wide">{{conference.title}}</h3>
                     <div class="w3-bar">
@@ -110,12 +134,45 @@
                             <article class="conference-details-primary w3-large">{{conference.description}}</article>
                             <section class="conference-details-secondary w3-small">Location: <span>{{conference.location}}</span></section>
                             <section class="conference-details-secondary w3-small">Date: <span>{{conference.date}}</span></section>
+                        </div>
+                        <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showEditConferenceModal(conference)">
+                            Edit
+                        </button>
+                        <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showViewPapersModal(conference)">
+                            View Papers
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My papers Section -->
+    <div id="dashboard-papers-tab" class="dashboard-content-tab w3-container w3-cell">
+        <h2 class="w3-container w3-xxlarge">My Papers</h2>
+
+        <div v-for="conference in papers">
+            <!-- My Papers On Conference Details Card -->
+            <div class="w3-panel">
+                <div class="w3-card w3-round-large w3-leftbar w3-display-container w3-hover-shadow">
+                    <h3 class="conference-name w3-padding w3-wide">{{conference.title}}</h3>
+                    <!-- Papers List -->
+                    <div v-for="paper in conference.papers">
+                        <div class="w3-bar">
+                            <div class="w3-bar-item">
+                                <article class="conference-details-primary w3-large">{{paper.title}}</article>
+                            </div>
+                            <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="">
+                                Edit
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+
 </div>
 
 <!-- Login Modal -->
@@ -229,6 +286,18 @@
             </label>
 
             <label>
+                <span>Co-authors (if any)</span>
+                <span class="w3-block">
+                    <div v-for='(tag, index) in authors_list' :key='tag' class="tag w3-tag w3-round-xxlarge">
+                        <span @click='removeTag(index, authors_list)'>x</span>
+                        {{ tag }}
+                    </div>
+                </span>
+
+                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Keywords" @keydown.enter='addTag($event, authors_list)' @keydown.delete='removeLastTag($event, authors_list)'>
+            </label>
+
+            <label>
                 <span>Abstract</span>
                 <input type="file" class="w3-input w3-margin-bottom" id="upload-abstract" v-on:change="abstractUpload()" required>
             </label>
@@ -250,14 +319,14 @@
 <div id="join-conference-modal" class="w3-modal">
     <div class="w3-modal-content w3-animate-top w3-card-4">
         <header class="w3-container presentation">
-            <span onclick="document.getElementById('join-conference-modal').style.display='none'" class="cms-button w3-button w3-display-topright w3-round-large">&times;</span>
-            <h1 id="join-conference-modal-title"></h1>
+            <span class="cms-button w3-button w3-display-topright w3-round-large" onclick="hideModal('join-conference-modal')">&times;</span>
+            <h1>{{title}}</h1>
         </header>
 
         <p class="w3-container w3-auto w3-large">Are you sure you want to register to this conference?</p>
 
         <footer class="w3-container w3-footer w3-row">
-            <button type="button" class="w3-button w3-bar w3-half" onclick="document.getElementById('join-conference-modal').style.display='none'">Cancel</button>
+            <button type="button" class="w3-button w3-bar w3-half" onclick="hideModal('join-conference-modal')">Cancel</button>
             <button type="button" class="w3-button w3-bar w3-half" v-on:click="joinConference()">Get ticket!</button>
         </footer>
     </div>
@@ -311,219 +380,94 @@
     </div>
 </div>
 
-<!-- Script Section -->
-<script>
-    /* Menu */
-    Vue.createApp({
-        data() {
-            return {
-                //TODO: move to data store
-                authenticated: false
-            }
-        },
-        mounted() {
-            api.auth.isAuthenticated()
-            .then(response => this.authenticated = response.data.authenticated)
-            .catch(error => alert(JSON.stringify(error)))
-        },
-        methods: {
-            logout() {
-                api.auth.logout()
-                .then(response => window.location.reload())
-                .catch(error => alert(JSON.stringify(error)))
-            },
-            showLogin() {
-                document.querySelector('#login-modal').style.display='block'
-            },
-            showAddConference() {
-                document.querySelector('#add-conference-modal').style.display='block'
-            }
-        }
-    })
-    .mount('#menu')
+<!-- Edit Conference Modal -->
+<div id="edit-conference-modal" class="w3-modal">
+    <div class="w3-modal-content w3-animate-top w3-card-4">
+        <header class="w3-container presentation">
+            <span onclick="document.getElementById('edit-conference-modal').style.display='none'" class="cms-button w3-button w3-display-topright">&times;</span>
+            <h1>Edit Conference</h1>
+        </header>
 
-    /* Login */
-    Vue.createApp({
-        data() {
-            return {
-                username: '',
-                password: ''
-            }
-        },
-        methods: {
-            login() {
-                api.auth.login(this.username, this.password)
-                .then(response => window.location.reload())
-                .catch(error => alert(JSON.stringify(error.response.data)))
-            }
-        }
-    })
-    .mount('#login-modal')
+        <form class="w3-container w3-margin-top">
+            <label class="w3-padding-top">
+                <span>Conference Title</span>
+                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Conference Title" v-model="title" required>
+            </label>
 
-    /* Sign up */
-    Vue.createApp({
-        data() {
-            return {
-                username: '',
-                email: '',
-                password1: '',
-                password2: ''
-            }
-        },
-        methods: {
-            register() {
-                api.auth.register(this.username, this.email, this.password1, this.password2)
-                .then(response => window.location.reload())
-                .catch(error => alert(JSON.stringify(error.response.data)))
-            }
-        }
-    })
-    .mount('#signup-modal')
+            <label class="w3-padding-top">
+                <span>Conference Description</span>
+                <textarea class="w3-input w3-margin-bottom" placeholder="Enter Conference Description" v-model="description" required></textarea>
+            </label>
 
-    /* Submit proposal */
-    Vue.createApp({
-        data() {
-            return {
-                title: '',
-                // author: '',
-                abstract: '',
-                paper: '',
-                keywords_list: [],
-                topics_list: []
-            }
-        },
-        methods: {
-            submitProposal() {
-                api.papers.create({
-                    title: this.title,
-                    conference: window.selectedConference,
-                    topics: [...this.topics_list],
-                    keywords: [...this.keywords_list],
-                    abstract: this.abstract,
-                    paper: this.paper,
-                    // authors: []
-                })
-                .then(response => window.location.reload())
-                .catch(error => alert(JSON.stringify(error)))
-            },
-            abstractUpload() {
-                this.abstract = document.querySelector('#upload-abstract').files[0]
-            },
-            paperUpload() {
-                this.paper = document.querySelector('#upload-paper').files[0]
-            },
-            addTag(event, tag_list) {
-                event.preventDefault()
-                var val = event.target.value.trim()
-                if (val.length > 0) {
-                    tag_list.push(val)
-                    event.target.value = ''
-                }
-            },
-            removeTag(index, tag_list) {
-                tag_list.splice(index, 1)
-            },
-            removeLastTag(event, tag_list) {
-                if (event.target.value.length === 0) {
-                    this.removeTag(tag_list.length - 1, tag_list)
-                }
-            }
-        }
-    })
-    .mount('#submit-proposal-modal')    
+            <label class="w3-padding-top">
+                <span>Date</span>
+                <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="date" required>
+            </label>
 
-    /* Create Conference */
-    Vue.createApp({
-        data() {
-            return {
-                title: '',
-                description: '',
-                date: new Date().toISOString().replace(/\..*$/, ''),
-                location: '',
-                deadline: new Date().toISOString().replace(/\..*$/, ''),
-                fee: 0
-            }
-        },
-        methods: {
-            createConference() {
-                api.conferences.create({
-                    title: this.title,
-                    description: this.description,
-                    date: this.date,
-                    location: this.location,
-                    deadline: this.deadline,
-                    fee: this.fee
-                })
-                .then(response => window.location.reload())
-                .catch(error => alert(JSON.stringify(error)))
-            }
-        }
-    })
-    .mount('#add-conference-modal')
-    
-    /* Join Conference */
-    Vue.createApp({
-        data() {
-            return {
-            }
-        },
-        methods: {
-            joinConference() {
-                api.conferences.join(window.selectedConference)
-                .then(response => window.location.reload())
-                .catch(error => alert(JSON.stringify(error)))
-            }
-        }
-    })
-    .mount('#join-conference-modal')
+            <label class="w3-padding-top">
+                <span>Location</span>
+                <input type="text" class="w3-input w3-margin-bottom" v-model="location" required>
+            </label>
 
-    /* Home tab */
-    Vue.createApp({
-        data() {
-            return {
-                conferences: []
-            }
-        },
-        mounted() {
-            api.conferences.list()
-            .then(response => this.conferences = response.data)
-            .catch(error => console.log(error))
-        },
-        methods: {
-            showSubmissionModal(id) {
-                window.selectedConference = id
-                document.getElementById('submit-proposal-modal').style.display='block'
-            },
-            showConfirmJoinModal(id, name) {
-                window.selectedConference = id
-                document.getElementById('join-conference-modal-title').innerText = name
-                document.getElementById('join-conference-modal').style.display='block'
-            }
-        }
-    })
-    .mount('#home-tab')
+            <label class="w3-padding-top">
+                <span>Fee</span>
+                <input type="number" class="w3-input w3-margin-bottom" v-model="fee" required>
+            </label>
 
-    /* Dashboard tab */
-    Vue.createApp({
-        data() {
-            return {
-                conferences: []
-            }
-        },
-        mounted() {
-            api.user.conferences()
-            .then(response => this.conferences = response.data)
-            //.catch(error => alert(JSON.stringify(error)))
-        }
-    })
-    .mount('#dashboard-tab')
+            <label class="w3-padding-top">
+                <span>Registration Deadline</span>
+                <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="deadline" required>
+            </label>
 
-    /* Tabified Navigation Menu Switch*/
-    function openTab(tabName) {
-        document.querySelectorAll(".menu-tab").forEach(div => div.style.display = "none")
-        document.getElementById(tabName).style.display = "block";
-    }
-</script>
+            <label>
+                <span>Add steering committee member</span>
+                <span class="w3-block">
+                    <div v-for='(tag, index) in steering_committee_list' :key='tag' class="tag w3-tag w3-round-xxlarge">
+                        <span @click='removeTag(index, steering_committee_list)'>x</span>
+                        {{ tag }}
+                    </div>
+                </span>
+
+                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Email" @keydown.enter='addTag($event, steering_committee_list)' @keydown.delete='removeLastTag($event, steering_committee_list)'>
+            </label>
+
+            <footer class="w3-container w3-footer w3-row">
+                <button type="button" class="w3-button w3-half" onclick="document.getElementById('edit-conference-modal').style.display='none'">Cancel</button>
+                <button type="button" class="w3-button w3-half" v-on:click="editConference">Save</button>
+            </footer>
+        </form>
+
+    </div>
+</div>
+
+<!-- View Papers In Conference Modal -->
+<div id="view-papers-modal" class="w3-modal">
+    <div class="w3-modal-content w3-animate-top w3-card-4">
+        <header class="w3-container presentation">
+            <span onclick="hideModal('view-papers-modal')" class="cms-button w3-button w3-display-topright w3-round-large">&times;</span>
+            <h1>Papers Submitted</h1>
+        </header>
+
+        <!-- Paper Panel Oficial -->
+        <div v-for="paper in papers">
+            <div class="w3-panel">
+                <!-- Paper Name -->
+                <div class="w3-container w3-block w3-row w3-border w3-hover-grey w3-round" style="cursor: pointer" v-on:click="openAccordionTab(paper.id)">
+                    <p class="w3-left w3-large w3-padding" style="width: 100%;">{{paper.title}}<span class="icon material-icons w3-right md-24">expand_more</span></p>
+                </div>
+                <!-- Dropdown -->
+                <div :id="'view-papers-section' + paper.id" class="w3-row w3-hide">
+                    <!-- TODO: Populate the href tags of the abstract and papers with its corresponding path in database-->
+                    <button class="w3-button w3-third"><a href="#" download="#"><span class="icon material-icons md-18">save_alt</span> Download Abstract</a></button>
+                    <button class="w3-button w3-third"><a href="#" download="#"><span class="icon material-icons md-18">save_alt</span> Download Paper</a></button>
+                    <button class="w3-button w3-third"><span class="icon material-icons md-18">rate_review</span> Bid For Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 </body>
 </html>
