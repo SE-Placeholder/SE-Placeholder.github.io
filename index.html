@@ -18,8 +18,6 @@
 <!-- Preloader -->
 <div id="loader-wrapper">
     <div id="loader"></div>
-    <div class="loader-section section-left"></div>
-    <div class="loader-section section-right"></div>
 </div>
 
 <!-- Navigation Menu -->
@@ -138,7 +136,7 @@
                         <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showEditConferenceModal(conference)">
                             Edit
                         </button>
-                        <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showViewPapersModal(conference)">
+                        <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showViewSubmissionsModal(conference)">
                             View Papers
                         </button>
                     </div>
@@ -151,16 +149,16 @@
     <div id="dashboard-papers-tab" class="dashboard-content-tab w3-container w3-cell">
         <h2 class="w3-container w3-xxlarge">My Papers</h2>
 
-        <div v-for="conference in papers">
+        <div v-for="conference in submissions">
             <!-- My Papers On Conference Details Card -->
             <div class="w3-panel">
                 <div class="w3-card w3-round-large w3-leftbar w3-display-container w3-hover-shadow">
                     <h3 class="conference-name w3-padding w3-wide">{{conference.title}}</h3>
                     <!-- Papers List -->
-                    <div v-for="paper in conference.papers">
+                    <div v-for="submission in conference.submissions">
                         <div class="w3-bar">
                             <div class="w3-bar-item">
-                                <article class="conference-details-primary w3-large">{{paper.title}}</article>
+                                <article class="conference-details-primary w3-large">{{submission.title}}</article>
                             </div>
                             <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="">
                                 Edit
@@ -262,6 +260,7 @@
             </label>
 
             <label>
+                <!-- TODO: make user press enter -->
                 <span>Keywords</span>
                 <span class="w3-block">
                     <div v-for='(tag, index) in keywords_list' :key='tag' class="tag w3-tag w3-round-xxlarge">
@@ -422,13 +421,13 @@
             <label>
                 <span>Add steering committee member</span>
                 <span class="w3-block">
-                    <div v-for='(tag, index) in steering_committee_list' :key='tag' class="tag w3-tag w3-round-xxlarge">
-                        <span @click='removeTag(index, steering_committee_list)'>x</span>
-                        {{ tag }}
+                    <div v-for='(user, index) in steering_committee' :key='user' class="tag w3-tag w3-round-xxlarge">
+                        <span @click='removeTag(index, steering_committee)'>x</span>
+                        {{user}}
                     </div>
                 </span>
 
-                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Email" @keydown.enter='addTag($event, steering_committee_list)' @keydown.delete='removeLastTag($event, steering_committee_list)'>
+                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Email" @keydown.enter='addTag($event, steering_committee)' @keydown.delete='removeLastTag($event, steering_committee)'>
             </label>
 
             <footer class="w3-container w3-footer w3-row">
@@ -449,17 +448,17 @@
         </header>
 
         <!-- Paper Panel Oficial -->
-        <div v-for="paper in papers">
+        <div v-for="submission in submissions">
             <div class="w3-panel">
                 <!-- Paper Name -->
-                <div class="w3-container w3-block w3-row w3-border w3-hover-grey w3-round" style="cursor: pointer" v-on:click="openAccordionTab(paper.id)">
-                    <p class="w3-left w3-large w3-padding" style="width: 100%;">{{paper.title}}<span class="icon material-icons w3-right md-24">expand_more</span></p>
+                <div class="w3-container w3-block w3-row w3-border w3-hover-grey w3-round" style="cursor: pointer" v-on:click="openAccordionTab(submission.id)">
+                    <p class="w3-left w3-large w3-padding" style="width: 100%;">{{submission.title}}<span class="icon material-icons w3-right md-24">expand_more</span></p>
                 </div>
                 <!-- Dropdown -->
-                <div :id="'view-papers-section' + paper.id" class="w3-row w3-hide">
-                    <!-- TODO: Populate the href tags of the abstract and papers with its corresponding path in database-->
-                    <button class="w3-button w3-third"><a href="#" download="#"><span class="icon material-icons md-18">save_alt</span> Download Abstract</a></button>
-                    <button class="w3-button w3-third"><a href="#" download="#"><span class="icon material-icons md-18">save_alt</span> Download Paper</a></button>
+                <div :id="'view-papers-section' + submission.id" class="w3-row w3-hide">
+                    <!-- TODO: make this not hardcoded -->
+                    <button :class="['w3-button', 'w3-third', submission.abstract? 'w3-enabled' : 'w3-disabled']"><a :href="'http://kind-wind-83282.pktriot.net'+submission.abstract"><span class="icon material-icons md-18">save_alt</span> Download Abstract</a></button>
+                    <button :class="['w3-button', 'w3-third', submission.paper? 'w3-enabled' : 'w3-disabled']"><a :href="'http://kind-wind-83282.pktriot.net'+submission.paper"><span class="icon material-icons md-18">save_alt</span> Download Paper</a></button>
                     <button class="w3-button w3-third"><span class="icon material-icons md-18">rate_review</span> Bid For Review</button>
                 </div>
             </div>

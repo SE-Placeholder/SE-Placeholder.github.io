@@ -179,6 +179,7 @@ form textarea {
     width: 100%;
     height: 100%;
     z-index: 1000;
+    background: var(--bg-color);
 }
 
 #loader {
@@ -192,9 +193,7 @@ form textarea {
     border-radius: 50%;
     border: 3px solid transparent;
     border-top-color: var(--text-color);
-
     animation: spin 2s linear infinite;
-
     z-index: 1001;
 }
 
@@ -208,7 +207,6 @@ form textarea {
     border-radius: 50%;
     border: 3px solid transparent;
     border-top-color: var(--contrast-color);
-
     animation: spin 3s linear infinite;
 }
 
@@ -222,7 +220,6 @@ form textarea {
     border-radius: 50%;
     border: 3px solid transparent;
     border-top-color: var(--text-color);
-
     animation: spin 1.5s linear infinite;
 }
 
@@ -235,41 +232,17 @@ form textarea {
     }
 }
 
-#loader-wrapper .loader-section {
-    position: fixed;
-    top: 0;
-    width: 51%;
-    height: 100%;
-    background: var(--bg-color);
-    z-index: 1000;
-    transform: translateX(0);
-}
-
-#loader-wrapper .loader-section.section-left {
-    left: 0;
-}
-
-#loader-wrapper .loader-section.section-right {
-    right: 0;
-}
-
-
-.loaded #loader-wrapper .loader-section.section-left {
-    transform: translateX(-100%);
-    transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1.000);
-}
-
-.loaded #loader-wrapper .loader-section.section-right {
-    transform: translateX(100%);
-    transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1.000);
-}
-
-.loaded #loader {
-    opacity: 0;
-    transition: all 0.3s ease-out;
-}
 .loaded #loader-wrapper {
-    visibility: hidden;
-    transform: translateY(-100%);
-    transition: all 0.3s 1s ease-out;
+    animation: fade-out 1s ease-in forwards;
+}
+
+@keyframes fade-out {
+    0% {
+        opacity: initial;
+        visibility: initial;
+    }
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
 }

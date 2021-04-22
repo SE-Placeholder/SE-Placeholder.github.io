@@ -9,18 +9,19 @@ const endpoints = {
     register: 'auth/register',
     changePassword: 'auth/password/change',
     resetPassword: 'auth/password/reset',
+
     conferences: 'conferences',
     conferenceDetails: 'conferences/<id>',
     joinConference: 'conferences/<id>/join',
+
     userConferences: '/user/conferences',
-    userPapers: '/user/papers',
-    papers: 'papers'
+    userSubmissions: '/user/submissions',
+
+    submissions: 'submissions'
 }
 
 const pathEncode = (endpoint, ...arguments) =>
-    arguments.reduce((path, argument) =>
-        path.replace(/<[^>]*>/, argument),
-        endpoint)
+    arguments.reduce((path, argument) => path.replace(/<[^>]*>/, argument), endpoint)
 
 const api = {
     auth: {
@@ -44,33 +45,32 @@ const api = {
             client.get(pathEncode(endpoints.conferenceDetails, id)),
         create: ({title, description, date, location, deadline, fee}) =>
             client.post(endpoints.conferences, {title, description, date, location, deadline, fee}),
-        update: ({id, title, description, date, location, deadline, fee}) =>
-            client.post(pathEncode(endpoints.conferenceDetails, id), {title, description, date, location, deadline, fee}),
+        update: ({id, title, description, date, location, deadline, fee, steering_committee}) =>
+            client.post(pathEncode(endpoints.conferenceDetails, id), {
+                title, description, date, location, deadline, fee, steering_committee: JSON.stringify(steering_committee)
+            }),
         join: id =>
             client.post(pathEncode(endpoints.joinConference, id))
     },
     user: {
         conferences: () =>
             client.get(endpoints.userConferences),
-        papers: () =>
-            client.get(endpoints.userPapers)
+        submissions: () =>
+            client.get(endpoints.userSubmissions)
     },
-    papers: {
+    submissions: {
         list: () =>
-            client.get(endpoints.papers),
+            client.get(endpoints.submissions),
         create: ({title, conference, topics, keywords, abstract, paper, authors}) => {
             data = new FormData()
             data.append('title', title)
             data.append('conference', conference)
-            console.warn('authors', authors)
-
-            if (authors.length) data.append('contributors', authors)
+            data.append('authors', JSON.stringify(authors))
             data.append('abstract', abstract)
-            // TODO: rename
-            data.append('proposal', paper)
+            data.append('paper', paper)
             data.append('keywords', JSON.stringify(keywords))
             data.append('topics', JSON.stringify(topics))
-            return client.post(endpoints.papers, data)
+            return client.post(endpoints.submissions, data)
         }
     },
     setUnauthorizedCallback: callback =>

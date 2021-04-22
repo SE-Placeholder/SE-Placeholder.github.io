@@ -22,7 +22,7 @@ document.addEventListener('readystatechange', () => {
         addConferenceModal = addConferenceModal.mount('#add-conference-modal')
         editConferenceModal = editConferenceModal.mount('#edit-conference-modal')
         joinConferenceModal = joinConferenceModal.mount('#join-conference-modal')
-        viewPapersModal = viewPapersModal.mount('#view-papers-modal')
+        viewSubmissionsModal = viewSubmissionsModal.mount('#view-papers-modal')
 
         menuComponent = menuComponent.mount('#menu')
     }
@@ -53,6 +53,8 @@ menuComponent = Vue.createApp({
                 this.username = response.data.username
                 dataStore.set('authenticated', response.data.authenticated)
                 dataStore.set('username', response.data.username)
+
+                document.body.classList.add("loaded")
 
                 homeTabComponent = homeTabComponent.mount('#home-tab')
                 if (response.data.authenticated)
@@ -85,13 +87,13 @@ homeTabComponent = Vue.createApp({
         api.conferences.list()
             .then(response => {
                 this.conferences = response.data
-                document.body.classList.add("loaded")
+                // document.body.classList.add("loaded")
             })
             .catch(error => alert(JSON.stringify(error)))
     },
     methods: {
         showSubmissionModal(id) {
-            submitProposalModal.$data.id = id
+            submitProposalModal.$data.conferenceId = id
             showModal('submit-proposal-modal')
         },
         showConfirmJoinModal(id, title) {
@@ -107,15 +109,16 @@ dahsboardTabComponent = Vue.createApp({
     data() {
         return {
             conferences: [],
-            papers: []
+            submissions: []
         }
     },
     mounted() {
+        // TODO: join these on the backend
         api.user.conferences()
             .then(response => this.conferences = response.data)
             .catch(error => alert(JSON.stringify(error)))
-        api.user.papers()
-            .then(response => this.papers = response.data)
+        api.user.submissions()
+            .then(response => this.submissions = response.data)
             .catch(error => alert(JSON.stringify(error)))
     },
     methods: {
@@ -127,11 +130,12 @@ dahsboardTabComponent = Vue.createApp({
             editConferenceModal.$data.deadline = new Date(Date.parse(conference.deadline)).toISOString().replace(/\..*$/, '')
             editConferenceModal.$data.date = new Date(Date.parse(conference.date)).toISOString().replace(/\..*$/, '')
             editConferenceModal.$data.id = conference.id
+            editConferenceModal.$data.steering_committee = conference.steering_committee.map(user => user.username)
             document.querySelector('#edit-conference-modal').style.display = 'block'
         },
 
-        showViewPapersModal(conference) {
-            viewPapersModal.$data.papers = [...conference.papers]
+        showViewSubmissionsModal(conference) {
+            viewSubmissionsModal.$data.submissions = [...conference.submissions]
             showModal('view-papers-modal')
         }
     }
@@ -177,9 +181,8 @@ signupModal = Vue.createApp({
 submitProposalModal = Vue.createApp({
     data() {
         return {
-            id: null,
+            conferenceId: null,
             title: '',
-            // author: '',
             abstract: '',
             paper: '',
             keywords_list: [],
@@ -189,9 +192,9 @@ submitProposalModal = Vue.createApp({
     },
     methods: {
         submitProposal() {
-            api.papers.create({
+            api.submissions.create({
                 title: this.title,
-                conference: window.selectedConference,
+                conference: this.conferenceId,
                 topics: [...this.topics_list],
                 keywords: [...this.keywords_list],
                 abstract: this.abstract,
@@ -265,7 +268,7 @@ editConferenceModal = Vue.createApp({
             location: '',
             deadline: new Date().toISOString().replace(/\..*$/, ''),
             fee: 0,
-            steering_committee_list: []
+            steering_committee: []
         }
     },
     methods: {
@@ -277,7 +280,8 @@ editConferenceModal = Vue.createApp({
                 date: this.date,
                 location: this.location,
                 deadline: this.deadline,
-                fee: this.fee
+                fee: this.fee,
+                steering_committee: [...this.steering_committee]
             })
                 .then(response => window.location.reload())
                 .catch(error => alert(JSON.stringify(error)))
@@ -319,10 +323,10 @@ joinConferenceModal = Vue.createApp({
 })
 
 
-viewPapersModal = Vue.createApp({
+viewSubmissionsModal = Vue.createApp({
     data() {
         return {
-            papers: []
+            submissions: []
         }
     },
     methods: {
