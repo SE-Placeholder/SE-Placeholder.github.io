@@ -1,5 +1,6 @@
 const client = axios.create({
     baseURL: 'https://kind-wind-83282.pktriot.net/'
+    // baseURL: 'http://localhost:1337/'
 })
 
 const endpoints = {
@@ -15,9 +16,12 @@ const endpoints = {
     joinConference: 'conferences/<id>/join',
 
     userConferences: '/user/conferences',
-    userSubmissions: '/user/submissions',
+    userProposals: '/user/proposals',
 
-    submissions: 'submissions'
+    proposals: 'proposals',
+    proposalDetails: 'proposals/<id>',
+    bidProposal: 'proposals/<id>/bid',
+    assignReviewers: 'proposals/<id>/assign-reviewers'
 }
 
 const pathEncode = (endpoint, ...arguments) =>
@@ -43,8 +47,8 @@ const api = {
             client.get(endpoints.conferences),
         retrieve: id =>
             client.get(pathEncode(endpoints.conferenceDetails, id)),
-        create: ({title, description, date, location, deadline, fee}) =>
-            client.post(endpoints.conferences, {title, description, date, location, deadline, fee}),
+        create: ({title, description, date, location, fee, abstract_deadline, proposal_deadline, bidding_deadline}) =>
+            client.post(endpoints.conferences, {title, description, date, location, fee, abstract_deadline, proposal_deadline, bidding_deadline}),
         update: ({id, title, description, date, location, deadline, fee, steering_committee}) =>
             client.post(pathEncode(endpoints.conferenceDetails, id), {
                 title, description, date, location, deadline, fee, steering_committee: JSON.stringify(steering_committee)
@@ -52,15 +56,9 @@ const api = {
         join: id =>
             client.post(pathEncode(endpoints.joinConference, id))
     },
-    user: {
-        conferences: () =>
-            client.get(endpoints.userConferences),
-        submissions: () =>
-            client.get(endpoints.userSubmissions)
-    },
-    submissions: {
+    proposals: {
         list: () =>
-            client.get(endpoints.submissions),
+            client.get(endpoints.proposals),
         create: ({title, conference, topics, keywords, abstract, paper, authors}) => {
             data = new FormData()
             data.append('title', title)
@@ -70,8 +68,24 @@ const api = {
             data.append('paper', paper)
             data.append('keywords', JSON.stringify(keywords))
             data.append('topics', JSON.stringify(topics))
-            return client.post(endpoints.submissions, data)
-        }
+            return client.post(endpoints.proposals, data)
+        },
+        // update: ({id, title, conference, topics, keywords, abstract, paper, authors}) => {
+        update: ({id, title, topics, keywords, abstract, paper, authors}) => {
+            data = new FormData()
+            data.append('title', title)
+            // data.append('conference', conference)
+            data.append('authors', JSON.stringify(authors))
+            if (abstract)
+                data.append('abstract', abstract)
+            if (paper)
+                data.append('paper', paper)
+            data.append('keywords', JSON.stringify(keywords))
+            data.append('topics', JSON.stringify(topics))
+            return client.post(pathEncode(endpoints.proposalDetails, id), data)
+        },
+        bid: (id, qualifier) => client.post(pathEncode(endpoints.bidProposal, id), {qualifier}),
+        assignReviewers: (id, reviewers) => client.post(pathEncode(endpoints.assignReviewers, id), {reviewers})
     },
     setUnauthorizedCallback: callback =>
         api.unauthorizedCallback = callback
