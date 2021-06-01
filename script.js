@@ -122,7 +122,8 @@ dashboardTabComponent = Vue.createApp({
     data() {
         return {
             conferences: [],
-            proposals: [],
+            submittedProposals: [],
+            reviewingProposals: [],
             sections: [],
             selectedSections: {}
         }
@@ -137,12 +138,21 @@ dashboardTabComponent = Vue.createApp({
             listener: allConferences.filter(conference =>
                 conference.listeners.map(listener => listener.user.id).includes(currentUser.id))
         }
-        this.proposals = allConferences.map(conference => {
+
+        this.submittedProposals = allConferences.map(conference => {
             conference = {...conference}
             conference.proposals = conference.proposals.filter(proposal =>
                 proposal.authors.map(user => user.id).includes(currentUser.id))
             return conference
         }).filter(conference => conference.proposals.length > 0)
+
+        this.reviewingProposals = allConferences.map(conference => {
+            conference = {...conference}
+            conference.proposals = conference.proposals.filter(proposal =>
+                proposal.reviews.map(review => review.user.id).includes(currentUser.id))
+            return conference
+        }).filter(conference => conference.proposals.length > 0)
+        
         this.sections = []
         for (conference of allConferences) {
             console.log(conference.listeners.find(listener => listener.user.id == currentUser.id))
