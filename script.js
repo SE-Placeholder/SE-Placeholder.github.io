@@ -155,7 +155,7 @@ dashboardTabComponent = Vue.createApp({
         
         this.sections = []
         for (conference of allConferences) {
-            console.log(conference.listeners.find(listener => listener.user.id == currentUser.id))
+            // console.log(conference.listeners.find(listener => listener.user.id == currentUser.id))
             sections = conference.listeners.find(listener => listener.user.id == currentUser.id)
             if (sections) {
                 for (section of sections.sections) {
@@ -172,6 +172,10 @@ dashboardTabComponent = Vue.createApp({
         });
     },
     methods: {
+        isReviewingPhase(conference) {
+            // console.log(conference)
+            return new Date() < new Date(conference.reviewing_deadline)
+        },
         joinSection(conferenceID) {
             sectionID = document.getElementById("selected-section").value
             api.conferences.joinSection(conferenceID, sectionID)
@@ -195,7 +199,9 @@ dashboardTabComponent = Vue.createApp({
             editConferenceModal.$data.id = conference.id
             editConferenceModal.$data.steering_committee = conference.steering_committee.map(user => user.username)
             editConferenceModal.$data.sections = conference.sections
-            editConferenceModal.$data.proposals = conference.proposals
+            proposals = conference.proposals.filter(proposal => proposal.reviews.reduce((a, c) => a + c.qualifier, 0) > 0)
+            editConferenceModal.$data.proposals = proposals
+            // console.log('alo', proposals)
 
             showModal('edit-conference-modal')
         },
@@ -439,6 +445,7 @@ addConferenceModal = Vue.createApp({
             abstractDeadline: new Date().toISOString().replace(/\..*$/, ''),
             proposalDeadline: new Date().toISOString().replace(/\..*$/, ''),
             biddingDeadline: new Date().toISOString().replace(/\..*$/, ''),
+            reviewingDeadline: new Date().toISOString().replace(/\..*$/, ''),
             fee: 0
         }
     },
@@ -452,7 +459,8 @@ addConferenceModal = Vue.createApp({
                 fee: this.fee,
                 abstract_deadline: this.abstractDeadline,
                 proposal_deadline: this.proposalDeadline,
-                bidding_deadline: this.biddingDeadline
+                bidding_deadline: this.biddingDeadline,
+                reviewing_deadline: this.reviewingDeadline
             })
                 .then(response => window.location.reload())
                 .catch(error => alert(JSON.stringify(error)))
@@ -472,6 +480,7 @@ editConferenceModal = Vue.createApp({
             abstractDeadline: new Date().toISOString().replace(/\..*$/, ''),
             proposalDeadline: new Date().toISOString().replace(/\..*$/, ''),
             biddingDeadline: new Date().toISOString().replace(/\..*$/, ''),
+            reviewingDeadline: new Date().toISOString().replace(/\..*$/, ''),
             fee: 0,
             steering_committee: [],
             sections: [],
@@ -491,6 +500,7 @@ editConferenceModal = Vue.createApp({
                 abstract_deadline: this.abstractDeadline,
                 proposal_deadline: this.proposalDeadline,
                 bidding_deadline: this.biddingDeadline,
+                reviewing_deadline: this.reviewingDeadline,
                 steering_committee: [...this.steering_committee]
             })
                 .then(response => window.location.reload())
@@ -628,7 +638,7 @@ viewProposalsModal = Vue.createApp({
         },
         saveReviewers(proposal) {
             if (proposal.assigned_reviewers.length < 2) {
-                alert('kurwa')
+                alert('select at least two reviewers')
                 return
             }
             api.proposals.assignReviewers(proposal.id, proposal.assigned_reviewers)

@@ -219,8 +219,11 @@
                             <div class="w3-bar-item">
                                 <article class="conference-details-primary w3-large">{{proposal.title}}</article>
                             </div>
-                            <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showReviewProposalModal(proposal)">
+                            <button v-if="isReviewingPhase(conference)" class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showReviewProposalModal(proposal)">
                                 Review
+                            </button>
+                            <button v-else class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showReviewsModal(proposal)">
+                                Show reviews
                             </button>
                         </div>
                     </div>
@@ -428,44 +431,59 @@
         </header>
 
         <form class="w3-container w3-margin-top">
+
+            <!-- Conference Title -->
             <label class="w3-padding-top">
                 <span>Conference Title</span>
                 <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Conference Title" v-model="title" required>
             </label>
 
+            <!-- Conference Description -->
             <label class="w3-padding-top">
                 <span>Conference Description</span>
                 <textarea class="w3-input w3-margin-bottom" placeholder="Enter Conference Description" v-model="description" required></textarea>
             </label>
 
+            <!-- Conference Date -->
             <label class="w3-padding-top">
                 <span>Date</span>
                 <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="date" required>
             </label>
 
+            <!-- Conference Location -->
             <label class="w3-padding-top">
                 <span>Location</span>
                 <input type="text" class="w3-input w3-margin-bottom" v-model="location" required>
             </label>
 
+            <!-- Attending Fee -->
             <label class="w3-padding-top">
                 <span>Fee</span>
                 <input type="number" class="w3-input w3-margin-bottom" v-model="fee" required>
             </label>
 
+            <!-- Abstract Deadline -->
             <label class="w3-padding-top">
                 <span>Abstract Deadline</span>
                 <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="abstractDeadline" required>
             </label>
 
+            <!-- Proposal Deadline -->
             <label class="w3-padding-top">
                 <span>Proposal Deadline</span>
                 <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="proposalDeadline" required>
             </label>
 
+            <!-- Bidding Deadline -->
             <label class="w3-padding-top">
                 <span>Bidding Deadline</span>
                 <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="biddingDeadline" required>
+            </label>
+
+            <!-- Reviewing Deadline -->
+            <label class="w3-padding-top">
+                <span>Reviewing Deadline</span>
+                <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="reviewingDeadline" required>
             </label>
 
             <footer class="w3-container w3-footer w3-row">
@@ -490,44 +508,59 @@
             <!-- Conference Details -->
             <h4>Conference details</h4>
             <div class="w3-margin-left">
+
+                <!-- Conference Title -->
                 <label class="w3-padding-top">
                     <span>Conference Title</span>
                     <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Conference Title" v-model="title" required>
                 </label>
 
+                <!-- Conference Description -->
                 <label class="w3-padding-top">
                     <span>Conference Description</span>
                     <textarea class="w3-input w3-margin-bottom" placeholder="Enter Conference Description" v-model="description" required></textarea>
                 </label>
 
+                <!-- Conference Date -->
                 <label class="w3-padding-top">
                     <span>Date</span>
                     <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="date" required>
                 </label>
 
+                <!-- Conference Location -->
                 <label class="w3-padding-top">
                     <span>Location</span>
                     <input type="text" class="w3-input w3-margin-bottom" v-model="location" required>
                 </label>
 
+                <!-- Attending Fee -->
                 <label class="w3-padding-top">
                     <span>Fee</span>
                     <input type="number" class="w3-input w3-margin-bottom" v-model="fee" required>
                 </label>
 
+                <!-- Abstract Deadline -->
                 <label class="w3-padding-top">
                     <span>Abstract Deadline</span>
                     <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="abstractDeadline" required>
                 </label>
 
+                <!-- Proposal Deadline -->
                 <label class="w3-padding-top">
                     <span>Proposal Deadline</span>
                     <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="proposalDeadline" required>
                 </label>
 
+                <!-- Bidding Deadline -->
                 <label class="w3-padding-top">
                     <span>Bidding Deadline</span>
                     <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="biddingDeadline" required>
+                </label>
+
+                <!-- Reviewing Deadline -->
+                <label class="w3-padding-top">
+                    <span>Reviewing Deadline</span>
+                    <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="reviewingDeadline" required>
                 </label>
             </div>
 
