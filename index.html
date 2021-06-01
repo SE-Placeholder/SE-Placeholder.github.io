@@ -94,6 +94,7 @@
     <div id="dashboard-menu" class="w3-sidebar w3-bar-block w3-large w3-cell">
         <button class="w3-bar-item w3-button w3-ripple w3-center w3-padding-32" onclick="openTab('.dashboard-content-tab', 'dashboard-conferences-tab')">My Conferences <span style="float: right">&#10095;</span></button>
         <button class="w3-bar-item w3-button w3-ripple w3-center w3-padding-32" onclick="openTab('.dashboard-content-tab', 'dashboard-papers-tab')">My Papers <span style="float: right">&#10095;</span> </button>
+        <button class="w3-bar-item w3-button w3-ripple w3-center w3-padding-32" onclick="openTab('.dashboard-content-tab', 'dashboard-timeline-tab')">Timeline <span style="float: right">&#10095;</span> </button>
     </div>
 
     <!-- My Conferences Section -->
@@ -114,6 +115,37 @@
                             <section class="conference-details-secondary w3-small">Location: <span>{{conference.location}}</span></section>
                             <section class="conference-details-secondary w3-small">Date: <span>{{new Date(conference.date).toDateString()}}</span></section>
                         </div>
+
+                        <!-- Sections in the conference dropdown -->
+                        <div class="w3-padding">
+                            <label class="w3-bar">
+                            <span class="">
+                                Select the sections you wish to attend
+                            </span>
+                                <select id="selected-section" class="w3-select" style="max-width:50% !important; width:auto;">
+                                    <option default value="yolo" style="font-style: italic">~No section selected~</option>
+                                    <option v-for="section in conference.sections" :value="section.id">{{section.title}}</option>
+                                </select>
+                                <button v-on:click="joinSection(conference.id)" type="button" class="w3-button w3-rest">Add</button>
+                            </label>
+                        </div>
+
+                        <!-- Selected Sections List -->
+                        <table class="w3-table w3-striped">
+                            <tr>
+                                <th>Section name</th>
+                                <th>From</th>
+                                <th>To</th>
+                            </tr>
+                            <tr v-for="section in selectedSections[conference.id]">
+                                <td>{{section.title}}</td>
+                                <td class="w3-pale-grey">{{new Date(section.start).toLocaleString()}}</td>
+                                <td class="w3-pale-grey">{{new Date(section.end).toLocaleString()}}</td>
+                            </tr>
+                        </table>
+
+
+
                     </div>
                 </div>
             </div>
@@ -148,11 +180,11 @@
     <!-- My papers Section -->
     <div id="dashboard-papers-tab" class="dashboard-content-tab w3-container w3-cell">
         <h2 class="w3-container w3-xxlarge">My Papers</h2>
-
+        <h3 class="w3-container w3-xlarge">Proposed</h3>
         <!-- TODO: rename proposal to something more suggestive (here it's a list of conferences that contain information about proposals) -->
         <div v-for="conference in proposals">
             <!-- My Papers On Conference Details Card -->
-            <div class="w3-panel">
+            <div class="w3-panel w3-margin-left">
                 <div class="w3-card w3-round-large w3-leftbar w3-display-container w3-hover-shadow">
                     <h3 class="conference-name w3-padding w3-wide">{{conference.title}}</h3>
                     <!-- Papers List -->
@@ -164,9 +196,51 @@
                             <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showEditProposalModal(proposal)">
                                 Edit
                             </button>
+                            <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showReviewsModal(proposal)">
+                                Show reviews
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <h3 class="w3-container w3-xlarge">Reviewing</h3>
+
+        <!-- TODO: rename proposal to something more suggestive (here it's a list of conferences that contain information about proposals) -->
+        <div v-for="conference in proposals">
+            <!-- My Papers On Conference Details Card -->
+            <div class="w3-panel w3-margin-left">
+                <div class="w3-card w3-round-large w3-leftbar w3-display-container w3-hover-shadow">
+                    <h3 class="conference-name w3-padding w3-wide">{{conference.title}}</h3>
+                    <!-- Papers List -->
+                    <div v-for="proposal in conference.proposals">
+                        <div class="w3-bar">
+                            <div class="w3-bar-item">
+                                <article class="conference-details-primary w3-large">{{proposal.title}}</article>
+                            </div>
+                            <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showReviewProposalModal(proposal)">
+                                Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline Section -->
+    <div id="dashboard-timeline-tab" class="dashboard-content-tab w3-container w3-cell" style="display: none">
+        <h2 class="w3-container w3-xxlarge">Timeline</h2>
+
+        <div id="timeline-container">
+            <div class="inner-container w3-center">
+                <h2 class="w3-center">Schedule</h2>
+                <ul class="timeline">
+                    <div v-for="section in sections">
+                        <li class="timeline-item" :data-date="new Date(section.start).toLocaleString()">{{section.conference.title}} - {{section.title}}</li>
+                    </div>
+                </ul>
             </div>
         </div>
     </div>
@@ -261,7 +335,6 @@
             </label>
 
             <label>
-                <!-- TODO: make user press enter -->
                 <span>Keywords</span>
                 <span class="w3-block">
                     <div v-for='(tag, index) in keywords_list' :key='tag' class="tag w3-tag w3-round-xxlarge">
@@ -270,7 +343,11 @@
                     </div>
                 </span>
 
-                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Keywords" @keydown.enter='addTag($event, keywords_list)' @keydown.delete='removeLastTag($event, keywords_list)'>
+                <input type="text" class="w3-input w3-margin-bottom" @focus='hideDiv("SubmitProposalModal_Keywords_Div")' @blur='checkIfEmpty($event,"SubmitProposalModal_Keywords_Div")' placeholder="Enter Keywords" @keydown.enter='addTag($event, keywords_list)' @keydown.delete='removeLastTag($event, keywords_list)'>
+                <!-- TODO: make this look better with css -->
+                <div id="SubmitProposalModal_Keywords_Div" class="hidden">
+                    <p>Please press enter to add</p>
+                </div>
             </label>
 
             <label>
@@ -282,7 +359,11 @@
                     </div>
                 </span>
 
-                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Topics" @keydown.enter='addTag($event, topics_list)' @keydown.delete='removeLastTag($event, topics_list)'>
+                <input type="text" class="w3-input w3-margin-bottom" @focus='hideDiv("SubmitProposalModal_Keywords_Div")' @blur='checkIfEmpty($event,"SubmitProposalModal_Keywords_Div")' placeholder="Enter Topics" @keydown.enter='addTag($event, topics_list)' @keydown.delete='removeLastTag($event, topics_list)'>
+                <!-- TODO: make this look better with css -->
+                <div id="SubmitProposalModal_Topics_Div" class="hidden">
+                    <p>Please press enter to add</p>
+                </div>
             </label>
 
             <label>
@@ -311,6 +392,12 @@
         <footer class="w3-container w3-footer w3-row">
             <button type="button" class="w3-button w3-bar w3-half" onclick="document.getElementById('submit-proposal-modal').style.display='none'">Cancel</button>
             <button type="button" class="w3-button w3-bar w3-half" v-on:click="submitProposal()">Submit</button>
+            <!-- Loader for file upload-->
+            <div id="upload-progress" class="slider w3-bar w3-bottom w3-hide">
+                <div class="line"></div>
+                <div class="subline inc"></div>
+                <div class="subline dec"></div>
+            </div>
         </footer>
     </div>
 </div>
@@ -392,59 +479,132 @@
 
 <!-- Edit Conference Modal -->
 <div id="edit-conference-modal" class="w3-modal">
-    <div class="w3-modal-content w3-animate-top w3-card-4">
+    <div class="w3-modal-content w3-animate-top w3-card-4 w3-margin-bottom">
         <header class="w3-container presentation">
             <span onclick="document.getElementById('edit-conference-modal').style.display='none'" class="cms-button w3-button w3-display-topright">&times;</span>
             <h1>Edit Conference</h1>
         </header>
 
         <form class="w3-container w3-margin-top">
-            <label class="w3-padding-top">
-                <span>Conference Title</span>
-                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Conference Title" v-model="title" required>
-            </label>
 
-            <label class="w3-padding-top">
-                <span>Conference Description</span>
-                <textarea class="w3-input w3-margin-bottom" placeholder="Enter Conference Description" v-model="description" required></textarea>
-            </label>
+            <!-- Conference Details -->
+            <h4>Conference details</h4>
+            <div class="w3-margin-left">
+                <label class="w3-padding-top">
+                    <span>Conference Title</span>
+                    <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Conference Title" v-model="title" required>
+                </label>
 
-            <label class="w3-padding-top">
-                <span>Date</span>
-                <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="date" required>
-            </label>
+                <label class="w3-padding-top">
+                    <span>Conference Description</span>
+                    <textarea class="w3-input w3-margin-bottom" placeholder="Enter Conference Description" v-model="description" required></textarea>
+                </label>
 
-            <label class="w3-padding-top">
-                <span>Location</span>
-                <input type="text" class="w3-input w3-margin-bottom" v-model="location" required>
-            </label>
+                <label class="w3-padding-top">
+                    <span>Date</span>
+                    <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="date" required>
+                </label>
 
-            <label class="w3-padding-top">
-                <span>Fee</span>
-                <input type="number" class="w3-input w3-margin-bottom" v-model="fee" required>
-            </label>
+                <label class="w3-padding-top">
+                    <span>Location</span>
+                    <input type="text" class="w3-input w3-margin-bottom" v-model="location" required>
+                </label>
 
-            
-            <label class="w3-padding-top">
-                <span>Abstract Deadline</span>
-                <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="abstractDeadline" required>
-            </label>
+                <label class="w3-padding-top">
+                    <span>Fee</span>
+                    <input type="number" class="w3-input w3-margin-bottom" v-model="fee" required>
+                </label>
 
-            <label class="w3-padding-top">
-                <span>Proposal Deadline</span>
-                <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="proposalDeadline" required>
-            </label>
+                <label class="w3-padding-top">
+                    <span>Abstract Deadline</span>
+                    <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="abstractDeadline" required>
+                </label>
 
-            <label class="w3-padding-top">
-                <span>Bidding Deadline</span>
-                <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="biddingDeadline" required>
-            </label>
+                <label class="w3-padding-top">
+                    <span>Proposal Deadline</span>
+                    <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="proposalDeadline" required>
+                </label>
 
+                <label class="w3-padding-top">
+                    <span>Bidding Deadline</span>
+                    <input type="datetime-local" class="w3-input w3-margin-bottom" v-model="biddingDeadline" required>
+                </label>
+            </div>
+
+            <!-- Conference Sections Details -->
+            <h4>Conference Sections</h4>
+            <table class="w3-table w3-striped w3-margin-left w3-margin-bottom">
+                <tr>
+                    <th>Section Title</th>
+                    <th>From:</th>
+                    <th>To:</th>
+                    <th></th>
+                </tr>
+                <tr v-for="section in sections" class="">
+                    <td class="">{{section.title}}</td>
+                    <td class="">{{new Date(section.start).toLocaleString()}}</td>
+                    <td class="">{{new Date(section.end).toLocaleString()}}</td>
+                    <td class="w3-red w3-button" v-on:click="deleteSection(section.title)">Yeet</td>
+                </tr>
+            </table>
+
+            <div class="w3-margin-left">
+                <div class="outer-border w3-margin-bottom">
+                    <label>
+                        <input id="section-name" type="text" placeholder="Enter Section Name" class="w3-input w3-padding-top"/>
+                    </label>
+
+                    <!-- Date Pickers Row -->
+                    <div class="w3-cell-row">
+                        <!-- Start Time for Section -->
+                        <label class="w3-cell w3-padding w3-half">
+                            <span class="">
+                                Start Time:
+                            </span>
+                            <input id="section-start" type="datetime-local" class="w3-input w3-padding-top">
+                        </label>
+
+                        <!-- End Time for Section -->
+                        <label class="w3-cell w3-padding w3-half">
+                            <span class="">
+                                End Time:
+                            </span>
+                            <input id="section-end" type="datetime-local" class="w3-input w3-padding-top">
+                        </label>
+                    </div>
+
+                    <!-- Papers submitted to conference dropdown -->
+                    <div class="w3-padding">
+                        <label class="w3-bar">
+                            <span class="">
+                                Add papers to this section:
+                            </span>
+                            <select id="selected-proposal" class="w3-select" style="max-width:50% !important; width:auto;">
+                                <option default value="yolo" style="font-style: italic">~No paper selected~</option>
+                                <option v-for="proposal in proposals" :value="proposal.id">{{proposal.title}}</option>
+                            </select>
+                            <button v-on:click="addProposal()" type="button" class="w3-button w3-rest">Add</button>
+                        </label>
+                    </div>
+
+                    <div class="w3-bar">
+                        <!-- Selected Papers List -->
+                        <div v-for="proposal in selectedProposals" class="w3-bar-item">
+                            <p> <span class="w3-large">&#128462;</span> {{proposal.title}}</p>
+                        </div>
+                    </div>
+
+                </div>
+                <button type="button" class="w3-button w3-bar w3-border w3-large" v-on:click="addSection()">Add New Section</button>
+            </div>
+
+
+            <!-- Steering Committee Details -->
             <label>
                 <span>Add steering committee member</span>
                 <span class="w3-block">
                     <div v-for='(user, index) in steering_committee' :key='user' class="tag w3-tag w3-round-xxlarge">
-                        <span @click='removeTag(index, steering_committee)'>x</span>
+                        <span @click='removeTag(index, steering_committee)' style="cursor: pointer">x</span>
                         {{user}}
                     </div>
                 </span>
@@ -452,9 +612,10 @@
                 <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Username/Email" @keydown.enter='addTag($event, steering_committee)' @keydown.delete='removeLastTag($event, steering_committee)'>
             </label>
 
+            <!-- Modal Footer -->
             <footer class="w3-container w3-footer w3-row">
-                <button type="button" class="w3-button w3-half" onclick="document.getElementById('edit-conference-modal').style.display='none'">Cancel</button>
-                <button type="button" class="w3-button w3-half" v-on:click="editConference">Save</button>
+                <button type="button" class="w3-button w3-half w3-large" onclick="document.getElementById('edit-conference-modal').style.display='none'">Cancel</button>
+                <button type="button" class="w3-button w3-half w3-large" v-on:click="editConference">Save</button>
             </footer>
         </form>
 
@@ -542,7 +703,7 @@
             </label>
 
             <label>
-                <!-- TODO: make user press enter -->
+
                 <span>Keywords</span>
                 <span class="w3-block">
                     <div v-for='(tag, index) in keywords_list' :key='tag' class="tag w3-tag w3-round-xxlarge">
@@ -551,7 +712,11 @@
                     </div>
                 </span>
 
-                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Keywords" @keydown.enter='addTag($event, keywords_list)' @keydown.delete='removeLastTag($event, keywords_list)'>
+                <input type="text" class="w3-input w3-margin-bottom" @focus='hideDiv("EditProposalModal_Keywords_Div")' @blur='checkIfEmpty($event,"EditProposalModal_Keywords_Div")' placeholder="Enter Keywords" @keydown.enter='addTag($event, keywords_list)' @keydown.delete='removeLastTag($event, keywords_list)'>
+                <!-- TODO: make this look better with css-->
+                <div id="EditProposalModal_Keywords_Div" class="hidden">
+                    <p>Please press enter to add</p>
+                </div>
             </label>
 
             <label>
@@ -563,7 +728,11 @@
                     </div>
                 </span>
 
-                <input type="text" class="w3-input w3-margin-bottom" placeholder="Enter Topics" @keydown.enter='addTag($event, topics_list)' @keydown.delete='removeLastTag($event, topics_list)'>
+                <input type="text" class="w3-input w3-margin-bottom"@focus='hideDiv("EditProposalModal_Topics_Div")' @blur='checkIfEmpty($event,"EditProposalModal_Topics_Div")' placeholder="Enter Topics" @keydown.enter='addTag($event, topics_list)' @keydown.delete='removeLastTag($event, topics_list)'>
+                <!-- TODO: make this look better with css -->
+                <div id="EditProposalModal_Topics_Div" class="hidden">
+                    <p>Please press enter to add</p>
+                </div>
             </label>
 
             <label>
@@ -597,6 +766,93 @@
     </div>
 </div>
 
+<!-- Review Proposal Modal -->
+<div id="review-proposal-modal" class="w3-modal">
+    <div class="w3-modal-content w3-animate-top w3-card-4">
+        <header class="w3-container presentation">
+            <span onclick="document.getElementById('review-proposal-modal').style.display='none'" class="cms-button w3-button w3-display-topright">&times;</span>
+            <h1>Review Proposal</h1>
+        </header>
+
+        <h2 class="w3-padding">{{title}} - {{authors_list.join(',')}}</h2>
+
+        <button :class="['w3-button', 'w3-half', abstract? 'w3-enabled' : 'w3-disabled']"><a :href="'http://kind-wind-83282.pktriot.net'+abstract" target="_blank"><span class="icon material-icons md-18">save_alt</span> Download Abstract</a></button>
+        <button :class="['w3-button', 'w3-half', paper? 'w3-enabled' : 'w3-disabled']"><a :href="'http://kind-wind-83282.pktriot.net'+paper" target="_blank"><span class="icon material-icons md-18">save_alt</span> Download Paper</a></button>
+
+        <form class="w3-container w3-margin-top">
+            <label>
+                <span>Review</span>
+                <textarea class="w3-input w3-margin-bottom" placeholder="Write your review here" v-model="review" required>
+                </textarea>
+            </label>
+            <div class="decision">
+                <div class="caption agree">Accept</div>
+                <div class="options">
+                    <div class="option_container max w3-radio">
+                        <input class="option " type="radio" name="choice" value="3">
+                        <span class="option_checkmark agree max"></span>
+                    </div>
+                    <div class="option_container med w3-radio">
+                        <input class="option" type="radio" name="choice" value="2">
+                        <span class="option_checkmark agree med"></span>
+                    </div>
+                    <div class="option_container min w3-radio">
+                        <input class="option" type="radio" name="choice" value="1">
+                        <span class="option_checkmark agree min"></span>
+                    </div>
+                    <div class="option_container mini w3-radio">
+                        <input class="option" type="radio" name="choice" value="0">
+                        <span class="option_checkmark neutral mini"></span>
+                    </div>
+                    <div class="option_container min w3-radio">
+                        <input class="option" type="radio" name="choice" value="-1">
+                        <span class="option_checkmark disagree min"></span>
+                    </div>
+                    <div class="option_container med w3-radio">
+                        <input class="option" type="radio" name="choice" value="-2">
+                        <span class="option_checkmark disagree med"></span>
+                    </div>
+                    <div class="option_container max w3-radio">
+                        <input class="option" type="radio" name="choice" value="-3">
+                        <span class="option_checkmark disagree max"></span>
+                    </div>
+                </div>
+                <div class="caption disagree">Reject</div>
+            </div>
+        </form>
+
+        <footer class="w3-container w3-footer w3-row">
+            <button type="button" class="w3-button w3-half" onclick="document.getElementById('review-proposal-modal').style.display='none'">Cancel</button>
+            <button type="button" class="w3-button w3-half" v-on:click="reviewProposal()">Save Review</button>
+        </footer>
+
+    </div>
+</div>
+
+
+<!-- Show Reviews Modal -->
+<div id="show-reviews-modal" class="w3-modal">
+    <div class="w3-modal-content w3-animate-top w3-card-4">
+        <header class="w3-container presentation">
+            <span onclick="document.getElementById('show-reviews-modal').style.display='none'" class="cms-button w3-button w3-display-topright">&times;</span>
+            <h1>Reviews for {{title}}</h1>
+        </header>
+
+
+        <div v-for="review in reviews">
+            <div class="w3-panel">
+                <p>{{review.review}}</p>
+            </div>
+        </div>
+
+
+        <footer class="w3-container w3-footer w3-row">
+            <button type="button" class="w3-button" onclick="document.getElementById('show-reviews-modal').style.display='none'">Cancel</button>
+            <!-- <button type="button" class="w3-button w3-half" v-on:click="reviewProposal()">Save Review</button> -->
+        </footer>
+
+    </div>
+</div>
 
 
 </body>

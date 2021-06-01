@@ -14,6 +14,7 @@ const endpoints = {
     conferences: 'conferences',
     conferenceDetails: 'conferences/<id>',
     joinConference: 'conferences/<id>/join',
+    joinConferenceSection: 'conferences/<id>/join-section',
 
     userConferences: '/user/conferences',
     userProposals: '/user/proposals',
@@ -21,6 +22,7 @@ const endpoints = {
     proposals: 'proposals',
     proposalDetails: 'proposals/<id>',
     bidProposal: 'proposals/<id>/bid',
+    reviewProposal: 'proposals/<id>/review',
     assignReviewers: 'proposals/<id>/assign-reviewers'
 }
 
@@ -49,12 +51,25 @@ const api = {
             client.get(pathEncode(endpoints.conferenceDetails, id)),
         create: ({title, description, date, location, fee, abstract_deadline, proposal_deadline, bidding_deadline}) =>
             client.post(endpoints.conferences, {title, description, date, location, fee, abstract_deadline, proposal_deadline, bidding_deadline}),
-        update: ({id, title, description, date, location, deadline, fee, steering_committee}) =>
-            client.post(pathEncode(endpoints.conferenceDetails, id), {
-                title, description, date, location, deadline, fee, steering_committee: JSON.stringify(steering_committee)
-            }),
+        update: ({id, title, description, date, location, fee, abstract_deadline, proposal_deadline, bidding_deadline, steering_committee, sections}) => {
+            updatedConference = {
+                title,
+                description,
+                date,
+                location,
+                fee,
+                abstract_deadline,
+                proposal_deadline,
+                bidding_deadline,
+                steering_committee: JSON.stringify(steering_committee)
+            }
+            if (sections) updatedConference.sections = JSON.stringify(sections)
+            return client.post(pathEncode(endpoints.conferenceDetails, id), updatedConference)
+        },
         join: id =>
-            client.post(pathEncode(endpoints.joinConference, id))
+            client.post(pathEncode(endpoints.joinConference, id)),
+        joinSection: (id, section) =>
+            client.post(pathEncode(endpoints.joinConferenceSection, id), {section})
     },
     proposals: {
         list: () =>
@@ -76,6 +91,7 @@ const api = {
             data.append('title', title)
             // data.append('conference', conference)
             data.append('authors', JSON.stringify(authors))
+            // check if a new file was uploaded
             if (abstract)
                 data.append('abstract', abstract)
             if (paper)
@@ -85,7 +101,8 @@ const api = {
             return client.post(pathEncode(endpoints.proposalDetails, id), data)
         },
         bid: (id, qualifier) => client.post(pathEncode(endpoints.bidProposal, id), {qualifier}),
-        assignReviewers: (id, reviewers) => client.post(pathEncode(endpoints.assignReviewers, id), {reviewers})
+        assignReviewers: (id, reviewers) => client.post(pathEncode(endpoints.assignReviewers, id), {reviewers}),
+        review: (id, qualifier, review) => client.post(pathEncode(endpoints.reviewProposal, id), {qualifier, review})
     },
     setUnauthorizedCallback: callback =>
         api.unauthorizedCallback = callback

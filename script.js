@@ -11,24 +11,6 @@ function hideModal(id) {
     document.getElementById(id).style.display = 'none'
 }
 
-
-document.addEventListener('readystatechange', () => {
-    api.setUnauthorizedCallback(() => showModal('login-modal'))
-
-    if (document.readyState == 'complete') {
-        loginModal = loginModal.mount('#login-modal')
-        signupModal = signupModal.mount('#signup-modal')
-        submitProposalModal = submitProposalModal.mount('#submit-proposal-modal')
-        editProposalModal = editProposalModal.mount('#edit-proposal-modal')
-        addConferenceModal = addConferenceModal.mount('#add-conference-modal')
-        editConferenceModal = editConferenceModal.mount('#edit-conference-modal')
-        joinConferenceModal = joinConferenceModal.mount('#join-conference-modal')
-        viewProposalsModal = viewProposalsModal.mount('#view-papers-modal')
-
-        menuComponent = menuComponent.mount('#menu')
-    }
-})
-
 dataStore = {
     properties: {},
     set: (property, value) => {
@@ -38,6 +20,26 @@ dataStore = {
         return dataStore.properties[property]
     }
 }
+
+document.addEventListener('readystatechange', () => {
+    api.setUnauthorizedCallback(() => showModal('login-modal'))
+
+    if (document.readyState == 'complete') {
+        loginModal = loginModal.mount('#login-modal')
+        signupModal = signupModal.mount('#signup-modal')
+        submitProposalModal = submitProposalModal.mount('#submit-proposal-modal')
+        editProposalModal = editProposalModal.mount('#edit-proposal-modal')
+        reviewProposalModal = reviewProposalModal.mount('#review-proposal-modal')
+        addConferenceModal = addConferenceModal.mount('#add-conference-modal')
+        editConferenceModal = editConferenceModal.mount('#edit-conference-modal')
+        joinConferenceModal = joinConferenceModal.mount('#join-conference-modal')
+        viewProposalsModal = viewProposalsModal.mount('#view-papers-modal')
+        showReviewsModal = showReviewsModal.mount('#show-reviews-modal')
+
+        menuComponent = menuComponent.mount('#menu')
+    }
+})
+
 
 
 menuComponent = Vue.createApp({
@@ -65,7 +67,7 @@ menuComponent = Vue.createApp({
                         dataStore.set('conferences', response.data)
                         homeTabComponent = homeTabComponent.mount('#home-tab')
                         if (this.authenticated)
-                            dahsboardTabComponent = dahsboardTabComponent.mount('#dashboard-tab')
+                            dashboardTabComponent = dashboardTabComponent.mount('#dashboard-tab')
                     })
                     .catch(error => console.log(error))
             })
@@ -116,32 +118,61 @@ homeTabComponent = Vue.createApp({
 })
 
 
-dahsboardTabComponent = Vue.createApp({
+dashboardTabComponent = Vue.createApp({
     data() {
         return {
             conferences: [],
-            proposals: []
+            proposals: [],
+            sections: [],
+            selectedSections: {}
         }
     },
     mounted() {
         allConferences = dataStore.get('conferences')
         currentUser = dataStore.get('user')
+
         this.conferences = {
-            steeringCommittee: allConferences.filter(conference => {
-                return conference.steering_committee.map(user => user.id).includes(currentUser.id)
-            }),
-            listener: allConferences.filter(conference => {
-                return conference.listeners.map(user => user.id).includes(currentUser.id)
-            })
+            steeringCommittee: allConferences.filter(conference =>
+                conference.steering_committee.map(user => user.id).includes(currentUser.id)),
+            listener: allConferences.filter(conference =>
+                conference.listeners.map(listener => listener.user.id).includes(currentUser.id))
         }
         this.proposals = allConferences.map(conference => {
             conference = {...conference}
-            conference.proposals = conference.proposals.filter(proposal => 
+            conference.proposals = conference.proposals.filter(proposal =>
                 proposal.authors.map(user => user.id).includes(currentUser.id))
             return conference
         }).filter(conference => conference.proposals.length > 0)
+        this.sections = []
+        for (conference of allConferences) {
+            console.log(conference.listeners.find(listener => listener.user.id == currentUser.id))
+            sections = conference.listeners.find(listener => listener.user.id == currentUser.id)
+            if (sections) {
+                for (section of sections.sections) {
+                    conferenceID = section.conference.id
+                    if (!(conferenceID in this.selectedSections))
+                        this.selectedSections[conferenceID] = []
+                    this.selectedSections[conferenceID].push(section)
+                }
+                this.sections.push(...sections.sections)
+            }
+        }
+        this.sections.sort(function(section1, section2) {
+            return new Date(section1.start) - new Date(section2.start);
+        });
     },
     methods: {
+        joinSection(conferenceID) {
+            sectionID = document.getElementById("selected-section").value
+            api.conferences.joinSection(conferenceID, sectionID)
+                .then(result => {
+                    if (!(conferenceID in this.selectedSections))
+                        this.selectedSections[conferenceID] = []
+                    section = dataStore.get('conferences').find(conference => conference.id == conferenceID).sections.find(section => section.id == sectionID)
+                    this.selectedSections[conferenceID].push(section)
+                })
+                .catch(error => alert(error.response.data.detail))
+        },
         showEditConferenceModal(conference) {
             editConferenceModal.$data.title = conference.title
             editConferenceModal.$data.description = conference.description
@@ -153,13 +184,17 @@ dahsboardTabComponent = Vue.createApp({
             editConferenceModal.$data.date = new Date(Date.parse(conference.date)).toISOString().replace(/\..*$/, '')
             editConferenceModal.$data.id = conference.id
             editConferenceModal.$data.steering_committee = conference.steering_committee.map(user => user.username)
-            document.querySelector('#edit-conference-modal').style.display = 'block'
+            editConferenceModal.$data.sections = conference.sections
+            editConferenceModal.$data.proposals = conference.proposals
+
+            showModal('edit-conference-modal')
         },
 
         showViewProposalsModal(conference) {
             viewProposalsModal.$data.proposals = [...conference.proposals].map(proposal => {
-                console.log(proposal)
-                reviewers = proposal.reviewers.map(user => user.username)
+                // console.log(proposal)
+                // reviewers = proposal.reviewers.map(user => user.username)
+                reviewers = proposal.reviews.map(review => review.user.username)
                 if (reviewers.length > 0) {
                     proposal.assigned_reviewers = reviewers
                 } else {
@@ -183,6 +218,37 @@ dahsboardTabComponent = Vue.createApp({
             editProposalModal.$data.topics_list = proposal.topics
             editProposalModal.$data.authors_list = proposal.authors.map(user => user.username)
             showModal('edit-proposal-modal')
+        },
+
+        showReviewsModal(proposal) {
+            // editProposalModal.$data.paperId = proposal.id
+            // editProposalModal.$data.conferenceId = proposal.conference
+            // editProposalModal.$data.title = proposal.title
+            // editProposalModal.$data.abstract = ''
+            // editProposalModal.$data.paper = ''
+            // // editProposalModal.$data.abstract = proposal.abstract || ''
+            // // editProposalModal.$data.paper = proposal.paper || ''
+            // editProposalModal.$data.keywords_list = proposal.keywords
+            // editProposalModal.$data.topics_list = proposal.topics
+            // editProposalModal.$data.authors_list = proposal.authors.map(user => user.username)
+            showReviewsModal.$data.reviews = proposal.reviews.filter(review => review.qualifier != null)
+            showModal('show-reviews-modal')
+        },
+
+        showReviewProposalModal(proposal) {
+            // console.log(proposal)
+            reviewProposalModal.$data.paperId = proposal.id
+            reviewProposalModal.$data.conferenceId = proposal.conference
+            reviewProposalModal.$data.title = proposal.title
+            reviewProposalModal.$data.abstract = proposal.abstract
+            reviewProposalModal.$data.paper = proposal.paper
+            reviewProposalModal.$data.keywords_list = proposal.keywords
+            reviewProposalModal.$data.topics_list = proposal.topics
+            reviewProposalModal.$data.authors_list = proposal.authors.map(user => user.username)
+            review = proposal.reviews.find(review => review.user.id == dataStore.get('user').id)
+            reviewProposalModal.$data.qualifier = review.qualifier
+            reviewProposalModal.$data.review = review.review
+            showModal('review-proposal-modal')
         }
     }
 })
@@ -238,6 +304,7 @@ submitProposalModal = Vue.createApp({
     },
     methods: {
         submitProposal() {
+            document.getElementById("upload-progress").classList.remove("w3-hide")
             api.proposals.create({
                 title: this.title,
                 conference: this.conferenceId,
@@ -247,7 +314,11 @@ submitProposalModal = Vue.createApp({
                 paper: this.paper,
                 authors: [...this.authors_list]
             })
-                .then(response => window.location.reload())
+                .then(response => {
+                    document.getElementById("upload-progress").classList.add("w3-hide")
+                    // hideModal("submit-proposal-modal")
+                    window.location.reload()
+                })
                 .catch(error => alert(JSON.stringify(error)))
         },
         abstractUpload() {
@@ -255,6 +326,15 @@ submitProposalModal = Vue.createApp({
         },
         paperUpload() {
             this.paper = document.querySelector('#upload-paper').files[0]
+        },
+        checkIfEmpty(event,divId){
+            event.preventDefault();
+            var value = event.target.value.trim();
+            if (value.length > 0)
+                document.getElementById(divId).style.display = 'block';
+        },
+        hideDiv(divId){
+            document.getElementById(divId).style.display = 'none';
         },
         addTag(event, tag_list) {
             event.preventDefault()
@@ -306,6 +386,15 @@ editProposalModal = Vue.createApp({
         },
         abstractUpload() {
             this.abstract = document.querySelector('#update-abstract').files[0]
+        },
+        checkIfEmpty(event,divId){
+            event.preventDefault();
+            var value = event.target.value.trim();
+            if (value.length > 0)
+                document.getElementById(divId).style.display = 'block';
+                },
+        hideDiv(divId){
+            document.getElementById(divId).style.display = 'none';
         },
         paperUpload() {
             this.paper = document.querySelector('#update-paper').files[0]
@@ -374,7 +463,10 @@ editConferenceModal = Vue.createApp({
             proposalDeadline: new Date().toISOString().replace(/\..*$/, ''),
             biddingDeadline: new Date().toISOString().replace(/\..*$/, ''),
             fee: 0,
-            steering_committee: []
+            steering_committee: [],
+            sections: [],
+            proposals: [],
+            selectedProposals: [],
         }
     },
     methods: {
@@ -409,6 +501,54 @@ editConferenceModal = Vue.createApp({
             if (event.target.value.length === 0) {
                 this.removeTag(tag_list.length - 1, tag_list)
             }
+        },
+        addProposal() {
+            selectedProposalID = document.getElementById("selected-proposal").value
+            if (selectedProposalID == "yolo") return
+            proposal = this.proposals.find(proposal => proposal.id == selectedProposalID)
+            this.proposals = this.proposals.filter(proposal => proposal.id != selectedProposalID)
+            this.selectedProposals.push(proposal)
+        },
+        deleteSection(sectionID) {
+            deletedSection = this.sections.find(section => section.title == sectionID)
+            api.conferences.update({
+                id: this.id,
+                sections: this.sections.map(section => {
+                    return {
+                        title: section.title,
+                        start: section.start,
+                        end: section.end,
+                        proposals: section.proposals.map(proposal => proposal.id)
+                    }
+                }).filter(section => section.title != sectionID)
+            })
+                .then(response => {
+                    this.sections = this.sections.filter(section => section.title != sectionID)
+                })
+                .catch(error => console.log(error))
+        },
+        addSection() {
+            newSection = {
+                title: document.getElementById("section-name").value,
+                start: document.getElementById("section-start").value,
+                end: new Date(),
+                proposals: this.selectedProposals.map(proposal => proposal.id)
+            }
+            api.conferences.update({
+                id: this.id,
+                sections: this.sections.map(section => {
+                    return {
+                        title: section.title,
+                        start: section.start,
+                        end: section.end,
+                        proposals: section.proposals.map(proposal => proposal.id)
+                    }
+                }).concat(newSection)
+            })
+                .then(response => {
+                    this.sections.push(newSection)
+                })
+                .catch(error => console.log(error))
         }
     }
 })
@@ -477,6 +617,10 @@ viewProposalsModal = Vue.createApp({
             return new Date() < new Date(this.bidding_deadline)
         },
         saveReviewers(proposal) {
+            if (proposal.assigned_reviewers.length < 2) {
+                alert('kurwa')
+                return
+            }
             api.proposals.assignReviewers(proposal.id, proposal.assigned_reviewers)
                 .then(response => console.log(response))
         },
@@ -495,6 +639,47 @@ viewProposalsModal = Vue.createApp({
             if (event.target.value.length === 0) {
                 this.removeTag(tag_list.length - 1, tag_list)
             }
+        }
+    }
+})
+
+
+reviewProposalModal = Vue.createApp({
+    data() {
+        return {
+            paperId: null,
+            // conferenceId: null,
+            title: '',
+            abstract: '',
+            paper: '',
+            keywords_list: [],
+            topics_list: [],
+            authors_list: [],
+            review: '',
+            qualifier: '',
+        }
+    },
+    methods: {
+        reviewProposal() {
+            this.qualifier = document.querySelector('input[name="choice"]:checked').value;
+            api.proposals.review(this.paperId, this.qualifier, this.review)
+                .then(response => hideModal('review-proposal-modal'))
+        }
+    }
+})
+
+
+showReviewsModal = Vue.createApp({
+    data() {
+        return {
+            title: '',
+            reviews: []
+        }
+    },
+    methods: {
+        reviewProposal() {
+            api.proposals.review(this.paperId, this.qualifier, this.review)
+                .then(response => hideModal('review-proposal-modal'))
         }
     }
 })
