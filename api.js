@@ -67,6 +67,8 @@ const api = {
             if (sections) updatedConference.sections = JSON.stringify(sections)
             return client.post(pathEncode(endpoints.conferenceDetails, id), updatedConference)
         },
+        delete: id =>
+            client.delete(pathEncode(endpoints.conferenceDetails, id)),
         join: id =>
             client.post(pathEncode(endpoints.joinConference, id)),
         joinSection: (id, section) =>

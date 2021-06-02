@@ -165,7 +165,7 @@
                             <section class="conference-details-secondary w3-small">Location: <span>{{conference.location}}</span></section>
                             <section class="conference-details-secondary w3-small">Date: <span>{{new Date(conference.date).toDateString()}}</span></section>
                         </div>
-                        <button class="cms-button-inversed w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="deleteConference()">
+                        <button class="cms-button-inversed w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="deleteConference(conference.id)">
                             Delete
                         </button>
                         <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showEditConferenceModal(conference)">
@@ -630,7 +630,16 @@
                         </div>
                     </div>
 
+                    <!-- Session Chairs -->
+                    <div class="w3-padding">
+                        <label class="w3-bar">
+                            <span class="">Session Chair:</span>
+                            <input type="text" class="w3-input" placeholder="Enter user(s) to be chair(co-chair)" style="max-width:75% !important; width:auto; display: inline;"/>
+                            <button type="button" class="w3-button">Add</button>
+                        </label>
+                    </div>
                 </div>
+
                 <button type="button" class="w3-button w3-bar w3-border w3-large" v-on:click="addSection()">Add New Section</button>
             </div>
 
