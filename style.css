@@ -126,6 +126,12 @@ button .conference-details-secondary {
     font-weight: bold;
 }
 
+.cms-button-inversed {
+    background-color: var(--contrast-color);
+    color: var(--bg-color);
+    font-weight: bold;
+}
+
 form textarea {
     min-height: 100px;
 }

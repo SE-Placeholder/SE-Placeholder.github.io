@@ -122,11 +122,11 @@
                             <span class="">
                                 Select the sections you wish to attend
                             </span>
-                                <select id="selected-section" class="w3-select" style="max-width:50% !important; width:auto;">
+                                <select :id="'selected-section'+conference.id" class="w3-select" style="max-width:50% !important; width:auto;">
                                     <option default value="yolo" style="font-style: italic">~No section selected~</option>
                                     <option v-for="section in conference.sections" :value="section.id">{{section.title}}</option>
                                 </select>
-                                <button v-on:click="joinSection(conference.id)" type="button" class="w3-button w3-rest">Add</button>
+                                <button v-on:click="joinSection(conference.id)" type="button" class="cms-button w3-button w3-rest">Add</button>
                             </label>
                         </div>
 
@@ -165,6 +165,9 @@
                             <section class="conference-details-secondary w3-small">Location: <span>{{conference.location}}</span></section>
                             <section class="conference-details-secondary w3-small">Date: <span>{{new Date(conference.date).toDateString()}}</span></section>
                         </div>
+                        <button class="cms-button-inversed w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="deleteConference()">
+                            Delete
+                        </button>
                         <button class="cms-button w3-button w3-large w3-container w3-bar-item w3-right w3-padding w3-margin" v-on:click="showEditConferenceModal(conference)">
                             Edit
                         </button>
@@ -566,7 +569,7 @@
 
             <!-- Conference Sections Details -->
             <h4>Conference Sections</h4>
-            <table class="w3-table w3-striped w3-margin-left w3-margin-bottom">
+            <table class="w3-table w3-striped w3-margin-left w3-margin-bottom" style="width: 98%;">
                 <tr>
                     <th>Section Title</th>
                     <th>From:</th>
@@ -577,7 +580,7 @@
                     <td class="">{{section.title}}</td>
                     <td class="">{{new Date(section.start).toLocaleString()}}</td>
                     <td class="">{{new Date(section.end).toLocaleString()}}</td>
-                    <td class="w3-red w3-button" v-on:click="deleteSection(section.title)">Yeet</td>
+                    <td class="w3-red w3-button w3-margin-right" v-on:click="deleteSection(section.title)">Delete</td>
                 </tr>
             </table>
 
@@ -792,8 +795,8 @@
         </form>
 
         <footer class="w3-container w3-footer w3-row">
-            <button type="button" class="w3-button w3-half" onclick="document.getElementById('edit-proposal-modal').style.display='none'">Cancel</button>
-            <button type="button" class="w3-button w3-half" v-on:click="updateProposal()">Save</button>
+            <button type="button" class="w3-button w3-half w3-large" onclick="document.getElementById('edit-proposal-modal').style.display='none'">Cancel</button>
+            <button type="button" class="w3-button w3-half w3-large" v-on:click="updateProposal()">Save</button>
         </footer>
 
     </div>
@@ -864,8 +867,8 @@
 
 
 <!-- Show Reviews Modal -->
-<div id="show-reviews-modal" class="w3-modal">
-    <div class="w3-modal-content w3-animate-top w3-card-4">
+<div id="show-reviews-modal" class="w3-modal w3-margin-bottom">
+    <div class="w3-modal-content w3-animate-top w3-card-4 w3-margin-bottom">
         <header class="w3-container presentation">
             <span onclick="document.getElementById('show-reviews-modal').style.display='none'" class="cms-button w3-button w3-display-topright">&times;</span>
             <h1>Reviews for {{title}}</h1>
@@ -873,14 +876,21 @@
 
 
         <div v-for="review in reviews">
-            <div class="w3-panel">
-                <p>{{review.review}}</p>
+            <div class="w3-panel w3-block w3-light-gray">
+                <h4 class="w3-margin-top">Review from: {{review.user.username}}</h4>
+                <p class="w3-serif w3-large w3-margin-left"><i>{{review.review}}</i></p>
+
+                <div class="w3-right w3-margin-right w3-margin-bottom">
+                    <h4 class="w3-cell w3-padding">Qualifier:</h4>
+                    <p class="w3-large w3-cell w3-padding">{{qualifierToString(review.qualifier)}}</p>
+                </div>
+
             </div>
         </div>
 
 
         <footer class="w3-container w3-footer w3-row">
-            <button type="button" class="w3-button" onclick="document.getElementById('show-reviews-modal').style.display='none'">Cancel</button>
+            <button type="button" class="w3-button w3-bar w3-margin-bottom w3-large" onclick="document.getElementById('show-reviews-modal').style.display='none'">Cancel</button>
             <!-- <button type="button" class="w3-button w3-half" v-on:click="reviewProposal()">Save Review</button> -->
         </footer>
 

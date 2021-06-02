@@ -177,7 +177,7 @@ dashboardTabComponent = Vue.createApp({
             return new Date() < new Date(conference.reviewing_deadline)
         },
         joinSection(conferenceID) {
-            sectionID = document.getElementById("selected-section").value
+            sectionID = document.getElementById("selected-section"+conferenceID).value
             api.conferences.joinSection(conferenceID, sectionID)
                 .then(result => {
                     if (!(conferenceID in this.selectedSections))
@@ -186,6 +186,9 @@ dashboardTabComponent = Vue.createApp({
                     this.selectedSections[conferenceID].push(section)
                 })
                 .catch(error => alert(error.response.data.detail))
+        },
+        deleteConference(){
+          console.log("yeet")
         },
         showEditConferenceModal(conference) {
             editConferenceModal.$data.title = conference.title
@@ -247,6 +250,7 @@ dashboardTabComponent = Vue.createApp({
             // editProposalModal.$data.keywords_list = proposal.keywords
             // editProposalModal.$data.topics_list = proposal.topics
             // editProposalModal.$data.authors_list = proposal.authors.map(user => user.username)
+            showReviewsModal.$data.title = proposal.title
             showReviewsModal.$data.reviews = proposal.reviews.filter(review => review.qualifier != null)
             showModal('show-reviews-modal')
         },
@@ -700,6 +704,25 @@ showReviewsModal = Vue.createApp({
         reviewProposal() {
             api.proposals.review(this.paperId, this.qualifier, this.review)
                 .then(response => hideModal('review-proposal-modal'))
+        },
+
+        qualifierToString(qualifier) {
+            switch (qualifier) {
+                case -3:
+                    return "Strong Reject (0/6)"
+                case -2:
+                    return "Reject (1/6)"
+                case -1:
+                    return "Weak Reject (2/6)"
+                case 0:
+                    return "Neutral (3/6)"
+                case 1:
+                    return "Weak Accept (4/6)"
+                case 2:
+                    return "Accept (5/6)"
+                case 3:
+                    return "Strong Accept (6/6)"
+            }
         }
     }
 })
